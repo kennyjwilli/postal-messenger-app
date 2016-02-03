@@ -1,5 +1,7 @@
 package com.postalmessanger.messenger.util;
 
+import android.content.Context;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +12,6 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
 
 /**
  * Created by kenny on 1/31/16.
@@ -18,7 +19,19 @@ import okhttp3.Response;
 public class Http
 {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    public static final String BASE_URL = "http://1eee517b.ngrok.com";
+    public static final String BASE_URL = "http://3c66a7e.ngrok.com";
+
+    public static Map<String, String> getAuthHeaders(String token)
+    {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Token " + token);
+        return headers;
+    }
+
+    public static Map<String, String> getAuthHeaders(Context ctx)
+    {
+        return getAuthHeaders(SLAPI.getToken(ctx));
+    }
 
     public static void post(String url, Map<String, String> headers, String json, Callback callback) throws IOException
     {

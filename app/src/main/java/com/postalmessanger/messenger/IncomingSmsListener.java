@@ -8,7 +8,18 @@ import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
+import com.postalmessanger.messenger.data_representation.Event;
+import com.postalmessanger.messenger.data_representation.Message;
+import com.postalmessanger.messenger.util.Util;
+
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.Arrays;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 /**
  * Created by kenny on 1/31/16.
@@ -39,10 +50,39 @@ public class IncomingSmsListener extends BroadcastReceiver
                     {
                         msgs[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                     }
-                    msgFrom = msgs[i].getOriginatingAddress();
-                    String msgBody = msgs[i].getMessageBody();
+                    SmsMessage msg = msgs[i];
+                    msgFrom = msg.getOriginatingAddress();
+                    String msgBody = msg.getMessageBody();
                     Log.v("PostalMessenger", "FROM "+msgFrom);
                     Log.v("PostalMessenger", "MESSAGE BODY " + msgBody);
+                    Event evt = new Event("client", "add-message", new Message("received", msg.getTimestampMillis(), msgFrom, msgBody));
+                    try
+                    {
+                        Util.sendAddMessageEvent(context, evt, new Callback()
+                        {
+                            @Override
+                            public void onFailure(Call call, IOException e)
+                            {
+
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException
+                            {
+                                if(response.isSuccessful())
+                                {
+                                    Log.v("PostalMessenger", "Added message successfully!");
+                                }else
+                                {
+                                    Log.v("PostalMessenger", "Failed to add message");
+                                }
+                                response.body().close();
+                            }
+                        });
+                    } catch (JSONException | IOException e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }else
             {

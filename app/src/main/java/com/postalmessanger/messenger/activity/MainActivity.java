@@ -1,5 +1,6 @@
 package com.postalmessanger.messenger.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -7,6 +8,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.postalmessanger.messenger.R;
+import com.postalmessanger.messenger.util.SLAPI;
 import com.postalmessanger.messenger.util.Util;
 
 public class MainActivity extends AppCompatActivity
@@ -24,8 +26,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v)
             {
-                Util.deleteToken(MainActivity.this);
+                SLAPI.deleteToken(MainActivity.this);
                 Toast.makeText(getApplicationContext(), "Deleted login token", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(MainActivity.this, LoginActivity.class));
             }
         });
 

@@ -2,10 +2,10 @@ package com.postalmessanger.messenger.activity;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
-import com.postalmessanger.messenger.util.Util;
+import com.postalmessanger.messenger.util.SLAPI;
 
 public class StartActivity extends AppCompatActivity
 {
@@ -15,7 +15,7 @@ public class StartActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         final Class<? extends Activity> activityClass;
-        if(Util.hasToken(this))
+        if(SLAPI.hasToken(this))
         {
             activityClass = MainActivity.class;
         }else

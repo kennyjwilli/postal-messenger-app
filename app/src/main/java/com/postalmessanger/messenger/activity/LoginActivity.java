@@ -3,19 +3,22 @@ package com.postalmessanger.messenger.activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.postalmessanger.messenger.R;
 import com.postalmessanger.messenger.util.Http;
+import com.postalmessanger.messenger.util.SLAPI;
 import com.postalmessanger.messenger.util.Util;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +33,7 @@ public class LoginActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        if (Util.hasToken(this))
+        if (SLAPI.hasToken(this))
         {
             startMainActivity();
             return;
@@ -76,13 +79,43 @@ public class LoginActivity extends AppCompatActivity
                         {
                             if (!response.isSuccessful())
                                 throw new IOException("Unexpected code " + response.code());
-                            Util.saveToken(LoginActivity.this, response.body().string());
-                            closeDialogAndStartApp(dialog);
+                            String token = response.body().string();
+                            SLAPI.saveToken(LoginActivity.this, token);
+                            requestPusherInfo(token, dialog);
                         }
                     });
                 } catch (IOException e)
                 {
                     e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void requestPusherInfo(String token, final Dialog dialog)
+    {
+        Http.get(Http.BASE_URL + "/api/pusher", Http.getAuthHeaders(token), new Callback()
+        {
+            @Override
+            public void onFailure(Call call, IOException e)
+            {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException
+            {
+                if(response.isSuccessful())
+                {
+                    String body = response.body().string();
+                    Gson gson = new Gson();
+                    Type type = Util.getStringStringType();
+                    Map<String, String> json = gson.fromJson(body, type);
+                    SLAPI.saveValues(getApplicationContext(), json);
+                    closeDialogAndStartApp(dialog);
+                }else
+                {
+                    response.body().close();
                 }
             }
         });
