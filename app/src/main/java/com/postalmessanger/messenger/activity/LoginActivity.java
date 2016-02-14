@@ -133,7 +133,7 @@ public class LoginActivity extends AppCompatActivity
             @Override
             public void run()
             {
-                dialog.hide();
+                dialog.dismiss();
                 startMainActivity();
                 finish();
             }
