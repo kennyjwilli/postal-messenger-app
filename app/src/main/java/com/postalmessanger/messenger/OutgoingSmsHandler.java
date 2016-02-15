@@ -40,9 +40,8 @@ public class OutgoingSmsHandler extends ContentObserver
     public void onChange(boolean selfChange)
     {
         super.onChange(selfChange);
-        Uri uriSMSURI = Uri.parse("content://sms");
         ContentResolver resolver = ctx.getContentResolver();
-        Cursor cur = resolver.query(uriSMSURI, null, null, null, null);
+        Cursor cur = resolver.query(Util.OUTGOING_SMS_URI, null, null, null, null);
         if (cur != null)
         {
             cur.moveToNext();
@@ -50,6 +49,7 @@ public class OutgoingSmsHandler extends ContentObserver
             String smsNumber = cur.getString(cur.getColumnIndex("address"));
             long timestamp = cur.getLong(cur.getColumnIndex("date"));
             int type = cur.getInt(cur.getColumnIndex("type"));
+            Log.v("PostalMessenger", "change " + type);
 
             //TODO: Implement more types. See URL below
             //http://stackoverflow.com/questions/15352103/android-documentation-for-content-sms-type-values
