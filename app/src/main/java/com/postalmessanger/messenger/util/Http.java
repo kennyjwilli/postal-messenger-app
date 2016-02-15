@@ -19,7 +19,7 @@ import okhttp3.RequestBody;
 public class Http
 {
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    public static final String BASE_URL = "http://3c66a7e.ngrok.com";
+    public static final String BASE_URL = "http://1ec4951d.ngrok.com";
 
     public static Map<String, String> getAuthHeaders(String token)
     {

@@ -8,13 +8,12 @@ import android.net.Uri;
 import android.os.Handler;
 import android.util.Log;
 
-import com.postalmessanger.messenger.data_representation.Event;
-import com.postalmessanger.messenger.data_representation.Message;
 import com.postalmessanger.messenger.util.Util;
 
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -49,17 +48,17 @@ public class OutgoingSmsHandler extends ContentObserver
             cur.moveToNext();
             String smsBody = cur.getString(cur.getColumnIndex("body"));
             String smsNumber = cur.getString(cur.getColumnIndex("address"));
-            long date = cur.getLong(cur.getColumnIndex("date"));
+            long timestamp = cur.getLong(cur.getColumnIndex("date"));
             int type = cur.getInt(cur.getColumnIndex("type"));
 
             //TODO: Implement more types. See URL below
             //http://stackoverflow.com/questions/15352103/android-documentation-for-content-sms-type-values
             if (type == 2)
             {
-                Event evt = new Event("client", "add-message", new Message("sent", date, smsNumber, smsBody));
+                String json = Util.addMessageJson(Util.SMS_SENT, Collections.singletonList(smsNumber), timestamp, smsBody);
                 try
                 {
-                    Util.sendAddMessageEvent(ctx, evt, new Callback()
+                    Util.sendAddMessageEvent(ctx, json, new Callback()
                     {
                         @Override
                         public void onFailure(Call call, IOException e)

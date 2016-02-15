@@ -8,14 +8,13 @@ import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
-import com.postalmessanger.messenger.data_representation.Event;
-import com.postalmessanger.messenger.data_representation.Message;
 import com.postalmessanger.messenger.util.Util;
 
 import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -46,19 +45,19 @@ public class IncomingSmsListener extends BroadcastReceiver
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                     {
                         msgs[i] = SmsMessage.createFromPdu((byte[]) pdus[i], format);
-                    }else
+                    } else
                     {
                         msgs[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                     }
                     SmsMessage msg = msgs[i];
                     msgFrom = msg.getOriginatingAddress();
                     String msgBody = msg.getMessageBody();
-                    Log.v("PostalMessenger", "FROM "+msgFrom);
+                    Log.v("PostalMessenger", "FROM " + msgFrom);
                     Log.v("PostalMessenger", "MESSAGE BODY " + msgBody);
-                    Event evt = new Event("client", "add-message", new Message("received", msg.getTimestampMillis(), msgFrom, msgBody));
+                    String json = Util.addMessageJson(Util.SMS_RECEIVED, Collections.singletonList(msgFrom), msg.getTimestampMillis(), msgBody);
                     try
                     {
-                        Util.sendAddMessageEvent(context, evt, new Callback()
+                        Util.sendAddMessageEvent(context, json, new Callback()
                         {
                             @Override
                             public void onFailure(Call call, IOException e)
@@ -69,10 +68,10 @@ public class IncomingSmsListener extends BroadcastReceiver
                             @Override
                             public void onResponse(Call call, Response response) throws IOException
                             {
-                                if(response.isSuccessful())
+                                if (response.isSuccessful())
                                 {
                                     Log.v("PostalMessenger", "Added message successfully!");
-                                }else
+                                } else
                                 {
                                     Log.v("PostalMessenger", "Failed to add message");
                                 }
@@ -84,7 +83,7 @@ public class IncomingSmsListener extends BroadcastReceiver
                         e.printStackTrace();
                     }
                 }
-            }else
+            } else
             {
                 Log.v("PostalMessenger", "PDUs is NULL");
             }
