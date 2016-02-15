@@ -30,7 +30,6 @@ public class IncomingSmsListener extends BroadcastReceiver
     {
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED"))
         {
-            Log.v("PostalMessenger", "GOT SMS");
             Bundle bundle = intent.getExtras();
             SmsMessage[] msgs;
             String format = bundle.getString("format");
@@ -52,8 +51,6 @@ public class IncomingSmsListener extends BroadcastReceiver
                     SmsMessage msg = msgs[i];
                     msgFrom = msg.getOriginatingAddress();
                     String msgBody = msg.getMessageBody();
-                    Log.v("PostalMessenger", "FROM " + msgFrom);
-                    Log.v("PostalMessenger", "MESSAGE BODY " + msgBody);
                     String json = Util.addMessageJson(Util.SMS_RECEIVED, Collections.singletonList(msgFrom), msg.getTimestampMillis(), msgBody);
                     try
                     {
