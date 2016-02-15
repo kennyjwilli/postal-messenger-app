@@ -25,6 +25,8 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,11 +40,12 @@ import okhttp3.Callback;
 public class Util
 {
     public static String socket_id;
+    public static final Uri OUTGOING_SMS_URI = Uri.parse("content://sms");
 
     public static void registerOutgoingSmsListener(Context ctx)
     {
         ContentResolver resolver = ctx.getContentResolver();
-        resolver.registerContentObserver(Uri.parse("content://sms"), true, new OutgoingSmsHandler(new Handler(), ctx));
+        resolver.registerContentObserver(OUTGOING_SMS_URI, true, new OutgoingSmsHandler(new Handler(), ctx));
     }
 
     public static Type getStringStringType()
@@ -50,6 +53,23 @@ public class Util
         return new TypeToken<Map<String, String>>()
         {
         }.getType();
+    }
+
+    public static String md5(String in) throws NoSuchAlgorithmException
+    {
+        MessageDigest digest;
+        digest = MessageDigest.getInstance("MD5");
+        digest.reset();
+        digest.update(in.getBytes());
+        byte[] a = digest.digest();
+        int len = a.length;
+        StringBuilder sb = new StringBuilder(len << 1);
+        for (byte anA : a)
+        {
+            sb.append(Character.forDigit((anA & 0xf0) >> 4, 16));
+            sb.append(Character.forDigit(anA & 0x0f, 16));
+        }
+        return sb.toString();
     }
 
     public static void setupPusher(Context ctx)
@@ -64,8 +84,8 @@ public class Util
             @Override
             public void onConnectionStateChange(ConnectionStateChange change)
             {
-                Log.v("PostalMessenger", "State changed to " + change.getCurrentState() +
-                        " from " + change.getPreviousState());
+                Log.v("PostalMessenger", "State changed from " + change.getPreviousState() +
+                        " to " + change.getCurrentState());
                 if (change.getCurrentState().equals(ConnectionState.CONNECTED))
                 {
                     socket_id = pusher.getConnection().getSocketId();
@@ -155,7 +175,7 @@ public class Util
 
     public static void sendAddMessageEvent(Context ctx, String json, Callback callback) throws JSONException, IOException
     {
-        Log.v("PostalMessenger", "Sent "+json);
+        Log.v("PostalMessenger", "Sent " + json);
         Http.post(Http.BASE_URL + "/api/message", Http.getAuthHeaders(ctx.getApplicationContext()), json, callback);
     }
 }
