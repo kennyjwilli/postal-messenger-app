@@ -9,7 +9,6 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.postalmessanger.messenger.OutgoingSmsHandler;
 import com.pusher.client.Pusher;
@@ -79,6 +78,9 @@ public class Util
         PusherOptions options = new PusherOptions().setAuthorizer(authorizer);
         //TODO: Get API_KEY from server
         final Pusher pusher = new Pusher("d24a197fd369b0ed0b58", options);
+        //TODO: Pusher may lose connection. See link
+        //also verify changing from lte to wifi wont drop connection
+        //https://github.com/pusher/pusher-websocket-java/issues/34#issuecomment-160173016
         pusher.connect(new ConnectionEventListener()
         {
             @Override
@@ -95,6 +97,8 @@ public class Util
             @Override
             public void onError(String message, String code, Exception e)
             {
+                //TODO: Add pusher reconnect code
+                //https://github.com/pusher/pusher-websocket-java/issues/34#issuecomment-39449068
                 Log.e("PostalMessenger", "There was a problem connecting! " + message + " " + code);
             }
         }, ConnectionState.ALL);
@@ -117,12 +121,8 @@ public class Util
             public void onEvent(String channelName, String eventName, String data)
             {
                 Gson gson = new Gson();
-                JsonParser parser = new JsonParser();
-                //problem is with nested json parsing to object. see link
-                //http://stackoverflow.com/questions/23919605/translating-nested-java-objects-to-from-json-using-gson
-                Log.v("PostalMessenger", data);
-                //Event e = gson.fromJson(json, Event.class);
-                //Log.v("PostalMessenger", "Got: " + map);
+                Map jsonObject = gson.fromJson(data, Map.class);
+                Log.v("PostalMessenger", "parsed " + jsonObject);
             }
         });
     }
