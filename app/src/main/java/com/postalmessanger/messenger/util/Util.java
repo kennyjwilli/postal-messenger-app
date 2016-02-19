@@ -26,7 +26,9 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -156,13 +158,18 @@ public class Util
         return result;
     }
 
+    public static String formatTimestamp(long timestamp)
+    {
+        return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(new Date(timestamp));
+    }
+
     public static String addMessageJson(String type, List<String> recipients, long timestamp, String data)
     {
         JsonObject msg = new JsonObject();
         msg.addProperty("type", type);
         normalizeRecipients(recipients);
         msg.add("recipients", toJsonArray(normalizeRecipients(recipients)));
-        msg.addProperty("timestamp", timestamp);
+        msg.addProperty("timestamp", formatTimestamp(timestamp));
         msg.addProperty("data", data);
 
         JsonObject json = new JsonObject();
