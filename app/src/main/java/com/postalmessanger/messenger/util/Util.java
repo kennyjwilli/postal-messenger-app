@@ -1,9 +1,15 @@
 package com.postalmessanger.messenger.util;
 
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Handler;
+import android.telephony.SmsManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -11,6 +17,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.postalmessanger.messenger.OutgoingSmsHandler;
+import com.postalmessanger.messenger.data_representation.Event;
+import com.postalmessanger.messenger.data_representation.Json;
+import com.postalmessanger.messenger.data_representation.Message;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.PrivateChannel;
@@ -73,7 +82,40 @@ public class Util
         return sb.toString();
     }
 
-    public static void setupPusher(Context ctx)
+    public static void sendSMS(Context ctx, Message msg)
+    {
+        final String SENT = "SMS_SENT";
+        SmsManager smsManager = SmsManager.getDefault();
+        String recipients = msg.recipients.get(0);
+        String message = msg.data;
+        Intent sentIntent = new Intent(SENT);
+        PendingIntent piSent = PendingIntent.getBroadcast(ctx, 0, sentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        BroadcastReceiver sentBroadcastReceiver = new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+                String action = intent.getAction();
+                Log.v("PostalMessenger", "action " + action);
+                if (action != null && action.equals(SENT))
+                {
+                    if (getResultCode() == Activity.RESULT_OK)
+                    {
+                        //mark as sent
+                        Log.v("PostalMessenger", "sent message successfully");
+                    } else
+                    {
+                        //mark as failed
+                        Log.v("PostalMessenger", "failed to send message");
+                    }
+                }
+            }
+        };
+        ctx.registerReceiver(sentBroadcastReceiver, new IntentFilter(SENT));
+        smsManager.sendTextMessage(recipients, null, message, piSent, null);
+    }
+
+    public static void setupPusher(final Context ctx)
     {
         HttpAuthorizer authorizer = new HttpAuthorizer(Http.BASE_URL + "/api/pusher-auth");
         authorizer.setHeaders(Http.getAuthHeaders(ctx));
@@ -122,9 +164,18 @@ public class Util
             @Override
             public void onEvent(String channelName, String eventName, String data)
             {
-                Gson gson = new Gson();
-                Map jsonObject = gson.fromJson(data, Map.class);
-                Log.v("PostalMessenger", "parsed " + jsonObject);
+                Event evt = Json.fromJson(data);
+                if (evt.dest.equals("phone"))
+                {
+                    switch (evt.type)
+                    {
+                        case "send-message":
+                            Log.v("PostalMessenger", "Send " + evt.message);
+                            sendSMS(ctx, evt.message);
+                        default:
+                    }
+                    Log.v("PostalMessenger", "parsed " + evt);
+                }
             }
         });
     }
