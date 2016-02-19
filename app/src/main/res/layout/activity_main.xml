@@ -30,4 +30,19 @@
         android:id="@+id/startService"
         android:layout_below="@+id/resetLoginBtn"
         android:layout_alignParentStart="true"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Print Contacts"
+        android:id="@+id/getContacts"
+        android:layout_below="@+id/startService"
+        android:layout_alignParentStart="true"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test btn"
+        android:id="@+id/testBtn"
+        android:layout_below="@+id/getContacts"
+        android:layout_alignParentStart="true"/>
 </RelativeLayout>
