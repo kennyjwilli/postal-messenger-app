@@ -7,8 +7,10 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.telephony.SmsManager;
 import android.util.Log;
 
@@ -17,6 +19,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.postalmessanger.messenger.OutgoingSmsHandler;
+import com.postalmessanger.messenger.data_representation.Contact;
 import com.postalmessanger.messenger.data_representation.Event;
 import com.postalmessanger.messenger.data_representation.Json;
 import com.postalmessanger.messenger.data_representation.Message;
@@ -171,6 +174,37 @@ public class Util {
                 }
             }
         });
+    }
+
+    public static List<Contact> getContacts(Context ctx) {
+        List<Contact> contacts = new ArrayList<>();
+        ContentResolver cr = ctx.getContentResolver();
+        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+        if (cur != null) {
+            while (cur.moveToNext()) {
+                String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
+                String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                List<String> phoneNumbers = new ArrayList<>();
+                int hasPhoneNumber = Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)));
+                if (hasPhoneNumber > 0) {
+                    Cursor pCur = cr.query(
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                            null,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                            new String[]{id}, null);
+                    if (pCur != null) {
+                        while (pCur.moveToNext()) {
+                            String phoneNumber = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                            phoneNumbers.add(phoneNumber);
+                        }
+                        pCur.close();
+                    }
+                }
+                contacts.add(new Contact(id, name, phoneNumbers));
+            }
+            cur.close();
+        }
+        return contacts;
     }
 
     public static final String ADD_MESSAGE = "add-message";
