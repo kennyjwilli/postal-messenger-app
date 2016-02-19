@@ -11,21 +11,17 @@ import com.postalmessanger.messenger.R;
 import com.postalmessanger.messenger.util.SLAPI;
 import com.postalmessanger.messenger.util.Util;
 
-public class MainActivity extends AppCompatActivity
-{
+public class MainActivity extends AppCompatActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         Button resetLoginBtn = (Button) findViewById(R.id.resetLoginBtn);
-        resetLoginBtn.setOnClickListener(new View.OnClickListener()
-        {
+        resetLoginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 SLAPI.deleteToken(MainActivity.this);
                 Toast.makeText(getApplicationContext(), "Deleted login token", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(MainActivity.this, LoginActivity.class));
@@ -33,11 +29,9 @@ public class MainActivity extends AppCompatActivity
         });
 
         Button startServiceBtn = (Button) findViewById(R.id.startService);
-        startServiceBtn.setOnClickListener(new View.OnClickListener()
-        {
+        startServiceBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 Util.registerOutgoingSmsListener(getApplicationContext());
                 Util.setupPusher(getApplicationContext());
                 Toast.makeText(getApplicationContext(), "Registered", Toast.LENGTH_SHORT).show();

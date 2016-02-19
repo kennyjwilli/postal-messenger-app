@@ -7,19 +7,15 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.postalmessanger.messenger.util.SLAPI;
 
-public class StartActivity extends AppCompatActivity
-{
+public class StartActivity extends AppCompatActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final Class<? extends Activity> activityClass;
-        if(SLAPI.hasToken(this))
-        {
+        if (SLAPI.hasToken(this)) {
             activityClass = MainActivity.class;
-        }else
-        {
+        } else {
             activityClass = LoginActivity.class;
         }
         this.startActivity(new Intent(this, activityClass));

@@ -9,11 +9,9 @@ import com.postalmessanger.messenger.util.Util;
 /**
  * Created by kenny on 2/1/16.
  */
-public class BootUpReceiver extends BroadcastReceiver
-{
+public class BootUpReceiver extends BroadcastReceiver {
     @Override
-    public void onReceive(Context context, Intent intent)
-    {
+    public void onReceive(Context context, Intent intent) {
         Util.registerOutgoingSmsListener(context);
     }
 }

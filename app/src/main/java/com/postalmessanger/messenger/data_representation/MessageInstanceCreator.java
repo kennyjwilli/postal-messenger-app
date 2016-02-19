@@ -7,10 +7,8 @@ import java.lang.reflect.Type;
 /**
  * Created by kenny on 2/18/16.
  */
-public class MessageInstanceCreator implements InstanceCreator<Message>
-{
-    public Message createInstance(Type type)
-    {
+public class MessageInstanceCreator implements InstanceCreator<Message> {
+    public Message createInstance(Type type) {
         return new Message();
     }
 }
