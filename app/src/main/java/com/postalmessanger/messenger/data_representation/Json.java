@@ -11,7 +11,7 @@ public class Json {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(Message.class, new MessageInstanceCreator());
         gsonBuilder.registerTypeAdapter(Contact.class, new ContactInstanceCreator());
-        gsonBuilder.registerTypeAdapter(PhoneNumber.class, new PhoneNumber());
+        gsonBuilder.registerTypeAdapter(PhoneNumber.class, new PhoneNumberInstanceCreator());
         Gson gson = gsonBuilder.create();
         return gson.fromJson(json, Event.class);
     }
