@@ -15,7 +15,6 @@ import android.telephony.SmsManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.postalmessanger.messenger.OutgoingSmsHandler;
@@ -23,6 +22,7 @@ import com.postalmessanger.messenger.data_representation.Contact;
 import com.postalmessanger.messenger.data_representation.Event;
 import com.postalmessanger.messenger.data_representation.Json;
 import com.postalmessanger.messenger.data_representation.Message;
+import com.postalmessanger.messenger.data_representation.PhoneNumber;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.PrivateChannel;
@@ -44,9 +44,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Response;
 
 
 /**
@@ -84,7 +82,8 @@ public class Util {
     public static void sendSMS(Context ctx, Message msg, final Fn fn) {
         final String SENT = "SMS_SENT";
         SmsManager smsManager = SmsManager.getDefault();
-        final String recipients = msg.recipients.get(0);
+        final Contact recipients = msg.recipients.get(0);
+        final PhoneNumber phoneNumber = recipients.phoneNumbers.get(0);
         final String message = msg.data;
         Intent sentIntent = new Intent(SENT);
         PendingIntent piSent = PendingIntent.getBroadcast(ctx, 0, sentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -105,7 +104,7 @@ public class Util {
             }
         };
         ctx.registerReceiver(sentBroadcastReceiver, new IntentFilter(SENT));
-        smsManager.sendTextMessage(recipients, null, message, piSent, null);
+        smsManager.sendTextMessage(phoneNumber.number, null, message, piSent, null);
     }
 
     public static void setupPusher(final Context ctx) {
@@ -168,12 +167,108 @@ public class Util {
 
                                 }
                             });
+                            break;
+                        case "get-contacts":
+                            List<Contact> contacts = getContacts(ctx);
                         default:
                     }
                     Log.v("PostalMessenger", "parsed " + evt);
                 }
             }
         });
+    }
+
+    public static String getPhoneNumberTypeString(int type) {
+        String sType = "";
+        switch (type) {
+            case ContactsContract.CommonDataKinds.Phone.TYPE_HOME:
+                sType = "Home";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE:
+                sType = "Mobile";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_WORK:
+                sType = "Work";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_FAX_HOME:
+                sType = "Home Fax";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_FAX_WORK:
+                sType = "Work Fax";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_MAIN:
+                sType = "Main";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_OTHER:
+                sType = "Other";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_CUSTOM:
+                sType = "Custom";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_PAGER:
+                sType = "Pager";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_ASSISTANT:
+                sType = "Assistant";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_CALLBACK:
+                sType = "Callback";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_CAR:
+                sType = "Car";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_COMPANY_MAIN:
+                sType = "Company Main";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_ISDN:
+                sType = "ISDN";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_MMS:
+                sType = "MMS";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_OTHER_FAX:
+                sType = "Other Fax";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_RADIO:
+                sType = "Radio";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_TELEX:
+                sType = "Telex";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_TTY_TDD:
+                sType = "TTY TDD";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_WORK_MOBILE:
+                sType = "Work Mobile";
+                break;
+            case ContactsContract.CommonDataKinds.Phone.TYPE_WORK_PAGER:
+                sType = "Work Pager";
+                break;
+        }
+        return sType;
+    }
+
+    public static List<PhoneNumber> phoneNumbersFor(Context ctx, String id) {
+        List<PhoneNumber> phoneNumbers = new ArrayList<>();
+        ContentResolver cr = ctx.getContentResolver();
+        Cursor pCur = cr.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                null,
+                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                new String[]{id}, null);
+        if (pCur != null) {
+            while (pCur.moveToNext()) {
+                int type = pCur.getInt(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
+                String phoneNumber = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                phoneNumbers.add(new PhoneNumber(type, phoneNumber));
+            }
+            pCur.close();
+        }
+        return phoneNumbers;
+    }
+
+    public static boolean hasPhoneNumber(Cursor cur) {
+        return 0 < Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)));
     }
 
     public static List<Contact> getContacts(Context ctx) {
@@ -183,27 +278,16 @@ public class Util {
         if (cur != null) {
             while (cur.moveToNext()) {
                 String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
-                String name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                List<String> phoneNumbers = new ArrayList<>();
-                int hasPhoneNumber = Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)));
-                if (hasPhoneNumber > 0) {
-                    Cursor pCur = cr.query(
-                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                            null,
-                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                            new String[]{id}, null);
-                    if (pCur != null) {
-                        while (pCur.moveToNext()) {
-                            String phoneNumber = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                            phoneNumbers.add(phoneNumber);
-                        }
-                        pCur.close();
-                    }
+                String name = cur.getString(cur.getColumnIndex(Contact.CONTACT_NAME));
+                List<PhoneNumber> phoneNumbers = new ArrayList<>();
+                if (hasPhoneNumber(cur)) {
+                    phoneNumbersFor(ctx, id);
                 }
                 contacts.add(new Contact(id, name, phoneNumbers));
             }
             cur.close();
         }
+
         return contacts;
     }
 
@@ -212,19 +296,11 @@ public class Util {
     public static final String SMS_RECEIVED = "received";
     public static final String SMS_SENT = "sent";
 
-    public static JsonArray toJsonArray(List<String> list) {
-        JsonArray arr = new JsonArray();
-        for (String s : list) {
-            arr.add(s);
-        }
-        return arr;
-    }
-
     public static String normalizePhoneNumber(String number) {
         return number.replaceAll("[^\\d]", "");
     }
 
-    public static List<String> normalizeRecipients(List<String> recipients) {
+    public static List<String> normalizePhoneNumbers(List<String> recipients) {
         List<String> result = new ArrayList<>();
         for (String s : recipients) {
             result.add(normalizePhoneNumber(s));
@@ -232,31 +308,46 @@ public class Util {
         return result;
     }
 
+    public static void normalizeContacts(List<Contact> contacts) {
+        for (Contact c : contacts) {
+            //c.phoneNumbers = normalizePhoneNumbers(c.phoneNumbers);
+        }
+    }
+
     public static String formatTimestamp(long timestamp) {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(new Date(timestamp));
     }
 
-    public static String messageSentJson(Event evt) {
+    public static JsonObject sendClientEvent() {
         JsonObject json = new JsonObject();
-        json.addProperty("dest", "phone");
-        json.addProperty("type", MESSAGE_SENT);
+        json.addProperty("dest", "client");
         json.addProperty("socket_id", socket_id);
+        return json;
+    }
+
+    public static String contactsJson(List<Contact> contacts) {
+        JsonObject json = sendClientEvent();
+        json.add("contacts", new Gson().toJsonTree(contacts));
+        return new Gson().toJson(json);
+    }
+
+    public static String messageSentJson(Event evt) {
+        JsonObject json = sendClientEvent();
+        json.addProperty("type", MESSAGE_SENT);
         json.add("message", new Gson().toJsonTree(evt.message));
         return new Gson().toJson(json);
     }
 
-    public static String addMessageJson(String type, List<String> recipients, long timestamp, String data) {
+    public static String addMessageJson(String type, List<Contact> recipients, long timestamp, String data) {
         JsonObject msg = new JsonObject();
         msg.addProperty("type", type);
-        normalizeRecipients(recipients);
-        msg.add("recipients", toJsonArray(normalizeRecipients(recipients)));
+        normalizeContacts(recipients);
+        msg.add("recipients", new Gson().toJsonTree(recipients));
         msg.addProperty("timestamp", formatTimestamp(timestamp));
         msg.addProperty("data", data);
 
-        JsonObject json = new JsonObject();
-        json.addProperty("dest", "client");
+        JsonObject json = sendClientEvent();
         json.addProperty("type", ADD_MESSAGE);
-        json.addProperty("socket_id", socket_id);
         json.add("message", msg);
         return new Gson().toJson(json);
     }

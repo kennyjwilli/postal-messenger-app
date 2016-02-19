@@ -1,13 +1,20 @@
 package com.postalmessanger.messenger.activity;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.postalmessanger.messenger.R;
+import com.postalmessanger.messenger.data_representation.Contact;
 import com.postalmessanger.messenger.util.SLAPI;
 import com.postalmessanger.messenger.util.Util;
 
@@ -35,6 +42,22 @@ public class MainActivity extends AppCompatActivity {
                 Util.registerOutgoingSmsListener(getApplicationContext());
                 Util.setupPusher(getApplicationContext());
                 Toast.makeText(getApplicationContext(), "Registered", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        Button printContactsBtn = (Button) findViewById(R.id.getContacts);
+        printContactsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.v("PostalMessenger", Util.contactsJson(Util.getContacts(getApplicationContext())));
+            }
+        });
+
+        Button testBtn = (Button) findViewById(R.id.testBtn);
+        testBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.v("PostalMessenger", String.valueOf(Contact.contactFrom(getApplicationContext(), "9856423658")));
             }
         });
     }

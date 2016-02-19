@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.os.Handler;
 import android.util.Log;
 
+import com.postalmessanger.messenger.data_representation.Contact;
 import com.postalmessanger.messenger.util.Util;
 
 import org.json.JSONException;
@@ -49,7 +50,7 @@ public class OutgoingSmsHandler extends ContentObserver {
             //TODO: Implement more types. See URL below
             //http://stackoverflow.com/questions/15352103/android-documentation-for-content-sms-type-values
             if (type == 2) {
-                String json = Util.addMessageJson(Util.SMS_SENT, Collections.singletonList(smsNumber), timestamp, smsBody);
+                String json = Util.addMessageJson(Util.SMS_SENT, Collections.singletonList(Contact.contactFrom(ctx, smsNumber)), timestamp, smsBody);
                 try {
                     Util.sendEvent(ctx, json, new Callback() {
                         @Override
@@ -71,6 +72,7 @@ public class OutgoingSmsHandler extends ContentObserver {
                     e.printStackTrace();
                 }
             }
+            cur.close();
         }
     }
 }

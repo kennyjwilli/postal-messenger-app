@@ -10,6 +10,8 @@ public class Json {
     public static Event fromJson(String json) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(Message.class, new MessageInstanceCreator());
+        gsonBuilder.registerTypeAdapter(Contact.class, new ContactInstanceCreator());
+        gsonBuilder.registerTypeAdapter(PhoneNumber.class, new PhoneNumber());
         Gson gson = gsonBuilder.create();
         return gson.fromJson(json, Event.class);
     }

@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class Message {
     public String type;
-    public List<String> recipients;
+    public List<Contact> recipients;
     public String timestamp;
     public String data;
 }

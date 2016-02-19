@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
+import com.postalmessanger.messenger.data_representation.Contact;
 import com.postalmessanger.messenger.util.Util;
 
 import org.json.JSONException;
@@ -24,7 +25,7 @@ import okhttp3.Response;
  */
 public class IncomingSmsListener extends BroadcastReceiver {
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(Context ctx, Intent intent) {
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
             Bundle bundle = intent.getExtras();
             SmsMessage[] msgs;
@@ -43,9 +44,9 @@ public class IncomingSmsListener extends BroadcastReceiver {
                     SmsMessage msg = msgs[i];
                     msgFrom = msg.getOriginatingAddress();
                     String msgBody = msg.getMessageBody();
-                    String json = Util.addMessageJson(Util.SMS_RECEIVED, Collections.singletonList(msgFrom), msg.getTimestampMillis(), msgBody);
+                    String json = Util.addMessageJson(Util.SMS_RECEIVED, Collections.singletonList(Contact.contactFrom(ctx, msgFrom)), msg.getTimestampMillis(), msgBody);
                     try {
-                        Util.sendEvent(context, json, new Callback() {
+                        Util.sendEvent(ctx, json, new Callback() {
                             @Override
                             public void onFailure(Call call, IOException e) {
 
