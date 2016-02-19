@@ -154,15 +154,7 @@ public class Util {
                                 @Override
                                 public void onSuccess() {
                                     try {
-                                        sendEvent(ctx, markMessageSentJson(evt), new Callback() {
-                                            @Override
-                                            public void onFailure(Call call, IOException e) {
-                                            }
-
-                                            @Override
-                                            public void onResponse(Call call, Response response) throws IOException {
-                                            }
-                                        });
+                                        sendEvent(ctx, messageSentJson(evt));
                                     } catch (JSONException | IOException e) {
                                         e.printStackTrace();
                                     }
@@ -182,7 +174,7 @@ public class Util {
     }
 
     public static final String ADD_MESSAGE = "add-message";
-    public static final String MARK_AS_SENT = "mark-as-sent";
+    public static final String MESSAGE_SENT = "message-sent";
     public static final String SMS_RECEIVED = "received";
     public static final String SMS_SENT = "sent";
 
@@ -210,10 +202,10 @@ public class Util {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(new Date(timestamp));
     }
 
-    public static String markMessageSentJson(Event evt) {
+    public static String messageSentJson(Event evt) {
         JsonObject json = new JsonObject();
         json.addProperty("dest", "phone");
-        json.addProperty("type", MARK_AS_SENT);
+        json.addProperty("type", MESSAGE_SENT);
         json.addProperty("socket_id", socket_id);
         json.add("message", new Gson().toJsonTree(evt.message));
         return new Gson().toJson(json);
@@ -238,5 +230,9 @@ public class Util {
     public static void sendEvent(Context ctx, String json, Callback callback) throws JSONException, IOException {
         Log.v("PostalMessenger", "Sent " + json);
         Http.post(Http.BASE_URL + "/api/message", Http.getAuthHeaders(ctx.getApplicationContext()), json, callback);
+    }
+
+    public static void sendEvent(Context ctx, String json) throws IOException, JSONException {
+        sendEvent(ctx, json, Http.emptyCallback());
     }
 }

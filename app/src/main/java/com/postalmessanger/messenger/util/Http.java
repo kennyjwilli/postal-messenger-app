@@ -6,12 +6,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by kenny on 1/31/16.
@@ -30,6 +32,20 @@ public class Http {
         return getAuthHeaders(SLAPI.getToken(ctx));
     }
 
+    public static Callback emptyCallback() {
+        return new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+
+            }
+        };
+    }
+
     public static void post(String url, Map<String, String> headers, String json, Callback callback) throws IOException {
         OkHttpClient client = new OkHttpClient();
         RequestBody body = RequestBody.create(JSON, json);
@@ -41,9 +57,14 @@ public class Http {
         client.newCall(req).enqueue(callback);
     }
 
+    public static void post(String url, Map<String, String> headers, String json) throws IOException {
+        post(url, headers, json, emptyCallback());
+    }
+
     public static void post(String url, String json, Callback callback) throws IOException {
         post(url, new HashMap<String, String>(), json, callback);
     }
+
 
     public static void get(String url, Map<String, String> headers, Callback callback) {
         OkHttpClient client = new OkHttpClient();
