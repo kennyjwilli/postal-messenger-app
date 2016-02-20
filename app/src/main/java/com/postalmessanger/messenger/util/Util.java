@@ -170,9 +170,14 @@ public class Util {
                             break;
                         case "get-contacts":
                             List<Contact> contacts = getContacts(ctx);
+                            String json = contactsJson(contacts);
+                            try {
+                                sendEvent(ctx, json);
+                            } catch (IOException | JSONException e) {
+                                e.printStackTrace();
+                            }
                         default:
                     }
-                    Log.v("PostalMessenger", "parsed " + evt);
                 }
             }
         });
@@ -260,7 +265,7 @@ public class Util {
             while (pCur.moveToNext()) {
                 int type = pCur.getInt(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
                 String phoneNumber = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                phoneNumbers.add(new PhoneNumber(type, phoneNumber));
+                phoneNumbers.add(new PhoneNumber(getPhoneNumberTypeString(type), phoneNumber));
             }
             pCur.close();
         }
@@ -281,13 +286,12 @@ public class Util {
                 String name = cur.getString(cur.getColumnIndex(Contact.CONTACT_NAME));
                 List<PhoneNumber> phoneNumbers = new ArrayList<>();
                 if (hasPhoneNumber(cur)) {
-                    phoneNumbersFor(ctx, id);
+                    phoneNumbers = phoneNumbersFor(ctx, id);
                 }
                 contacts.add(new Contact(id, name, phoneNumbers));
             }
             cur.close();
         }
-
         return contacts;
     }
 
@@ -327,6 +331,7 @@ public class Util {
 
     public static String contactsJson(List<Contact> contacts) {
         JsonObject json = sendClientEvent();
+        json.addProperty("type", "get-contacts");
         json.add("contacts", new Gson().toJsonTree(contacts));
         return new Gson().toJson(json);
     }
