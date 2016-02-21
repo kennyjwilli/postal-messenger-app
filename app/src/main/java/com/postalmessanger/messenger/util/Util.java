@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.telephony.SmsManager;
@@ -23,6 +24,7 @@ import com.postalmessanger.messenger.data_representation.Event;
 import com.postalmessanger.messenger.data_representation.Json;
 import com.postalmessanger.messenger.data_representation.Message;
 import com.postalmessanger.messenger.data_representation.PhoneNumber;
+import com.postalmessanger.messenger.db.DbUtil;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.PrivateChannel;
@@ -64,6 +66,14 @@ public class Util {
         }.getType();
     }
 
+    public static void printExtras(Bundle bundle) {
+        for (String key : bundle.keySet()) {
+            Object value = bundle.get(key);
+            Log.d("PostalMessenger", String.format("%s %s (%s)", key,
+                    value.toString(), value.getClass().getName()));
+        }
+    }
+
     public static String md5(String in) throws NoSuchAlgorithmException {
         MessageDigest digest;
         digest = MessageDigest.getInstance("MD5");
@@ -79,7 +89,7 @@ public class Util {
         return sb.toString();
     }
 
-    public static void sendSMS(Context ctx, Message msg, final Fn fn) {
+    public static void sendSMS(final Context ctx, Message msg, final Fn fn) {
         final String SENT = "SMS_SENT";
         SmsManager smsManager = SmsManager.getDefault();
         final Contact recipients = msg.recipients.get(0);
@@ -94,6 +104,8 @@ public class Util {
                 Log.v("PostalMessenger", "action " + action);
                 if (action != null && action.equals(SENT)) {
                     if (getResultCode() == Activity.RESULT_OK) {
+                        String uri = (String) intent.getExtras().get("uri");
+                        DbUtil.insertMessage(DbUtil.getWriteableDb(ctx), uri);
                         fn.onSuccess();
                         Log.v("PostalMessenger", "sent message successfully");
                     } else {
@@ -293,6 +305,11 @@ public class Util {
             cur.close();
         }
         return contacts;
+    }
+
+    public static long getMessageNumber(String uri) {
+        String[] split = uri.split("/");
+        return Long.parseLong(split[split.length - 1]);
     }
 
     public static final String ADD_MESSAGE = "add-message";

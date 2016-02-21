@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.postalmessanger.messenger.R;
 import com.postalmessanger.messenger.data_representation.Contact;
+import com.postalmessanger.messenger.db.DbUtil;
 import com.postalmessanger.messenger.util.SLAPI;
 import com.postalmessanger.messenger.util.Util;
 
@@ -57,7 +58,8 @@ public class MainActivity extends AppCompatActivity {
         testBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.v("PostalMessenger", String.valueOf(Contact.contactFrom(getApplicationContext(), "9856423658")));
+                DbUtil.insertMessage(DbUtil.getWriteableDb(getApplicationContext()), "content://sms/400");
+                //Log.v("PostalMessenger", String.valueOf(DbUtil.hasMessage(DbUtil.getWriteableDb(getApplicationContext()), "content://sms/195")));
             }
         });
     }
