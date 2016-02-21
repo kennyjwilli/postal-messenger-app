@@ -15,14 +15,14 @@ public class MessageCacheDbHelper extends SQLiteOpenHelper {
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + MessageEntry.TABLE_NAME + " (" +
                     MessageEntry._ID + " INTEGER PRIMARY KEY," +
-                    MessageEntry.COL_ID + " INTEGER UNIQUE" + COMMA_SEP +
+                    MessageEntry.COL_ID + " INTEGER NOT NULL UNIQUE" + COMMA_SEP +
                     MessageEntry.COL_URI + TEXT_TYPE +
                     " )";
     private static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + MessageEntry.TABLE_NAME;
 
 
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "MessageCache.db";
 
     public MessageCacheDbHelper(Context ctx) {
