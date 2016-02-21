@@ -1,6 +1,5 @@
 package com.postalmessanger.messenger.db;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
@@ -30,10 +29,9 @@ public class DbUtil {
 //        values.put(MessageEntry.COL_ID, Util.getMessageNumber(uri));
 //        db.insert(MessageEntry.TABLE_NAME, null, values);
 
-        String sql = "INSERT INTO " + MessageEntry.TABLE_NAME +
+        String sql = "INSERT OR IGNORE INTO " + MessageEntry.TABLE_NAME +
                 " (" + MessageEntry.COL_ID + "," + MessageEntry.COL_URI + ") " +
-                "VALUES (" + Util.getMessageNumber(uri) + ",'" + uri + "') " +
-                "ON DUPLICATE KEY UPDATE " + MessageEntry.COL_URI + " = " + MessageEntry.COL_URI;
+                "VALUES (" + Util.getMessageNumber(uri) + ",'" + uri + "') ";
         Log.v("PostalMessenger", sql);
         db.execSQL(sql);
     }
