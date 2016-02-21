@@ -12,4 +12,5 @@ public class Message {
     public List<Contact> recipients;
     public String timestamp;
     public String data;
+    public int idx;
 }
