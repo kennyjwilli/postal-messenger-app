@@ -53,7 +53,7 @@ public class OutgoingSmsHandler extends ContentObserver {
             //TODO: Implement more types. See URL below
             //http://stackoverflow.com/questions/15352103/android-documentation-for-content-sms-type-values
             Log.v("PostalMessenger", "might push");
-            if (type == 2 && !DbUtil.hasMessage(DbUtil.getReadableDb(ctx), id)) {
+            if (type == 2 && !DbUtil.hasMessage(ctx, id)) {
                 Log.v("PostalMessenger", "will push");
                 String json = Util.addMessageJson(Util.SMS_SENT, Collections.singletonList(Contact.contactFrom(ctx, smsNumber)), timestamp, smsBody);
                 try {

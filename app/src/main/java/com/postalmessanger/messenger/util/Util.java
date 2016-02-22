@@ -104,7 +104,7 @@ public class Util {
                 if (action != null && action.equals(SENT)) {
                     if (getResultCode() == Activity.RESULT_OK) {
                         String uri = (String) intent.getExtras().get("uri");
-                        DbUtil.insertMessage(DbUtil.getWriteableDb(ctx), uri);
+                        DbUtil.insertMessage(ctx, uri);
                         fn.onSuccess();
                         Log.v("PostalMessenger", "sent message successfully");
                     } else {
@@ -163,6 +163,9 @@ public class Util {
                     switch (evt.type) {
                         case "send-message":
                             Log.v("PostalMessenger", "Send " + evt.message);
+                            final int id = DbUtil.getNextSmsId(ctx);
+                            // TODO: Not sure if marking message before it is sent is really going to fly
+                            DbUtil.insertMessage(ctx, id);
                             sendSMS(ctx, evt.message, new Fn() {
                                 @Override
                                 public void onSuccess() {
@@ -174,7 +177,9 @@ public class Util {
                                 }
 
                                 @Override
-                                public void onError() {}
+                                public void onError() {
+                                    DbUtil.removeMessage(ctx, id);
+                                }
                             });
                             break;
                         case "get-contacts":
