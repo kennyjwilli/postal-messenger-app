@@ -307,9 +307,9 @@ public class Util {
         return contacts;
     }
 
-    public static long getMessageNumber(String uri) {
+    public static int getMessageNumber(String uri) {
         String[] split = uri.split("/");
-        return Long.parseLong(split[split.length - 1]);
+        return Integer.parseInt(split[split.length - 1]);
     }
 
     public static final String ADD_MESSAGE = "add-message";
