@@ -58,9 +58,12 @@ public class MainActivity extends AppCompatActivity {
         testBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.v("PostalMessenger", "before" + String.valueOf(DbUtil.hasMessage(DbUtil.getReadableDb(getApplicationContext()), "content://sms/329")));
-                DbUtil.insertMessage(DbUtil.getWriteableDb(getApplicationContext()), "content://sms/329");
-                Log.v("PostalMessenger", "after" + String.valueOf(DbUtil.hasMessage(DbUtil.getReadableDb(getApplicationContext()), "content://sms/329")));
+                Log.v("PostalMessenger", "before" + String.valueOf(DbUtil.hasMessage(getApplicationContext(), "content://sms/323")));
+                DbUtil.insertMessage(getApplicationContext(), "content://sms/323");
+                Log.v("PostalMessenger", "after" + String.valueOf(DbUtil.hasMessage(getApplicationContext(), "content://sms/323")));
+                DbUtil.removeMessage(getApplicationContext(), 323);
+                Log.v("PostalMessenger", "after2" + String.valueOf(DbUtil.hasMessage(getApplicationContext(), "content://sms/323")));
+                Log.v("PostalMessenger", String.valueOf(DbUtil.getCurrentSmsId(getApplicationContext())));
             }
         });
     }

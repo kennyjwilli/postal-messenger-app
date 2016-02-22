@@ -72,6 +72,7 @@ public class LoginActivity extends AppCompatActivity {
                             String token = response.body().string();
                             SLAPI.saveToken(LoginActivity.this, token);
                             requestPusherInfo(token, dialog);
+                            response.body().close();
                         }
                     });
                 } catch (IOException e) {
@@ -97,9 +98,8 @@ public class LoginActivity extends AppCompatActivity {
                     Map<String, String> json = gson.fromJson(body, type);
                     SLAPI.saveValues(getApplicationContext(), json);
                     closeDialogAndStartApp(dialog);
-                } else {
-                    response.body().close();
                 }
+                response.body().close();
             }
         });
     }
