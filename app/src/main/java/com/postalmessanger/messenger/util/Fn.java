@@ -5,6 +5,5 @@ package com.postalmessanger.messenger.util;
  */
 public interface Fn {
     void onSuccess();
-
     void onError();
 }

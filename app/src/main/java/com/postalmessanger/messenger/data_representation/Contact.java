@@ -33,8 +33,7 @@ public class Contact {
         this.phoneNumbers = phoneNumbers;
     }
 
-    public Contact() {
-    }
+    public Contact() {}
 
     public String toString() {
         return "{:id " + id + " :name " + name + " :phoneNumbers " + phoneNumbers + "}";

@@ -35,14 +35,10 @@ public class Http {
     public static Callback emptyCallback() {
         return new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
-
-            }
+            public void onFailure(Call call, IOException e) {}
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-
-            }
+            public void onResponse(Call call, Response response) throws IOException {}
         };
     }
 

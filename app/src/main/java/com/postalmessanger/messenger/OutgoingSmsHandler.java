@@ -5,9 +5,11 @@ import android.content.Context;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.util.Log;
 
 import com.postalmessanger.messenger.data_representation.Contact;
+import com.postalmessanger.messenger.db.DbUtil;
 import com.postalmessanger.messenger.util.Util;
 
 import org.json.JSONException;
@@ -43,19 +45,21 @@ public class OutgoingSmsHandler extends ContentObserver {
             cur.moveToNext();
             String smsBody = cur.getString(cur.getColumnIndex("body"));
             String smsNumber = cur.getString(cur.getColumnIndex("address"));
+            int id = cur.getInt(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID));
             long timestamp = cur.getLong(cur.getColumnIndex("date"));
             int type = cur.getInt(cur.getColumnIndex("type"));
             Log.v("PostalMessenger", "change " + type);
 
             //TODO: Implement more types. See URL below
             //http://stackoverflow.com/questions/15352103/android-documentation-for-content-sms-type-values
-            if (type == 2) {
+            Log.v("PostalMessenger", "might push");
+            if (type == 2 && !DbUtil.hasMessage(DbUtil.getReadableDb(ctx), id)) {
+                Log.v("PostalMessenger", "will push");
                 String json = Util.addMessageJson(Util.SMS_SENT, Collections.singletonList(Contact.contactFrom(ctx, smsNumber)), timestamp, smsBody);
                 try {
                     Util.sendEvent(ctx, json, new Callback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
-
                         }
 
                         @Override

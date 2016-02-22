@@ -62,8 +62,7 @@ public class Util {
     }
 
     public static Type getStringStringType() {
-        return new TypeToken<Map<String, String>>() {
-        }.getType();
+        return new TypeToken<Map<String, String>>() {}.getType();
     }
 
     public static void printExtras(Bundle bundle) {
@@ -175,9 +174,7 @@ public class Util {
                                 }
 
                                 @Override
-                                public void onError() {
-
-                                }
+                                public void onError() {}
                             });
                             break;
                         case "get-contacts":
