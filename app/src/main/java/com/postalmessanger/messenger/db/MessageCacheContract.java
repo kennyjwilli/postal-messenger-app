@@ -12,7 +12,5 @@ public class MessageCacheContract {
     public static abstract class MessageEntry implements BaseColumns {
         public static final String TABLE_NAME = "message";
         public static final String COL_ID = "id";
-        public static final String COL_URI = "uri";
-
     }
 }

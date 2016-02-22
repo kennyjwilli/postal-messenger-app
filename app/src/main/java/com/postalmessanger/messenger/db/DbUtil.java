@@ -23,34 +23,35 @@ public class DbUtil {
         return new MessageCacheDbHelper(ctx).getReadableDatabase();
     }
 
-    public static void insertMessage(SQLiteDatabase db, String uri) {
-//        ContentValues values = new ContentValues();
-//        values.put(MessageEntry.COL_URI, uri);
-//        values.put(MessageEntry.COL_ID, Util.getMessageNumber(uri));
-//        db.insert(MessageEntry.TABLE_NAME, null, values);
-
+    public static void insertMessage(SQLiteDatabase db, int id) {
         String sql = "INSERT OR IGNORE INTO " + MessageEntry.TABLE_NAME +
-                " (" + MessageEntry.COL_ID + "," + MessageEntry.COL_URI + ") " +
-                "VALUES (" + Util.getMessageNumber(uri) + ",'" + uri + "') ";
-        Log.v("PostalMessenger", sql);
+                " (" + MessageEntry.COL_ID + ") " +
+                "VALUES (" + id + ") ";
         db.execSQL(sql);
     }
 
-    public static boolean hasMessage(SQLiteDatabase db, String uri) {
-        long msgNum = Util.getMessageNumber(uri);
+    public static void insertMessage(SQLiteDatabase db, String uri) {
+        insertMessage(db, Util.getMessageNumber(uri));
+    }
+
+    public static boolean hasMessage(SQLiteDatabase db, int id) {
         String sql = "SELECT * FROM " + MessageEntry.TABLE_NAME +
-                " WHERE " + MessageEntry.COL_ID + " = '" + msgNum + "'";
+                " WHERE " + MessageEntry.COL_ID + " = " + id + "";
         Cursor cur = db.rawQuery(sql, null);
         if (cur != null) {
-            cur.moveToFirst();
-            Log.v("PostalMessenger", DatabaseUtils.dumpCursorToString(cur));
-            long l = cur.getLong(cur.getColumnIndex(MessageEntry.COL_ID));
-            Log.v("PostalMessenger", "Q " + l);
-            if (l == msgNum) {
-                return true;
+            //Log.v("PostalMessenger", DatabaseUtils.dumpCursorToString(cur));
+            if (cur.moveToFirst() && cur.getCount() > 0) {
+                long l = cur.getLong(cur.getColumnIndex(MessageEntry.COL_ID));
+                if (l == id) {
+                    return true;
+                }
             }
             cur.close();
         }
         return false;
+    }
+
+    public static boolean hasMessage(SQLiteDatabase db, String uri) {
+        return hasMessage(db, Util.getMessageNumber(uri));
     }
 }
