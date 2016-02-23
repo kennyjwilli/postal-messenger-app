@@ -9,8 +9,8 @@ import java.util.List;
  */
 public class Message {
     public String type;
-    public List<Contact> recipients;
+    public List<String> recipients;
     public String timestamp;
-    public String data;
+    public String text;
     public int idx;
 }

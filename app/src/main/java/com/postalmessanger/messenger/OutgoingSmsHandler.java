@@ -44,7 +44,7 @@ public class OutgoingSmsHandler extends ContentObserver {
         if (cur != null) {
             cur.moveToNext();
             String smsBody = cur.getString(cur.getColumnIndex("body"));
-            String smsNumber = cur.getString(cur.getColumnIndex("address"));
+            String msgFrom = cur.getString(cur.getColumnIndex("address"));
             int id = cur.getInt(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID));
             long timestamp = cur.getLong(cur.getColumnIndex("date"));
             int type = cur.getInt(cur.getColumnIndex("type"));
@@ -55,7 +55,7 @@ public class OutgoingSmsHandler extends ContentObserver {
             Log.v("PostalMessenger", "might push");
             if (type == 2 && !DbUtil.hasMessage(ctx, id)) {
                 Log.v("PostalMessenger", "will push");
-                String json = Util.addMessageJson(Util.SMS_SENT, Collections.singletonList(Contact.contactFrom(ctx, smsNumber)), timestamp, smsBody);
+                String json = Util.addMessageJson(Util.SMS_SENT, Collections.singletonList(msgFrom), timestamp, smsBody);
                 try {
                     Util.sendEvent(ctx, json, new Callback() {
                         @Override

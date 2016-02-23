@@ -44,13 +44,11 @@ public class IncomingSmsListener extends BroadcastReceiver {
                     SmsMessage msg = msgs[i];
                     msgFrom = msg.getOriginatingAddress();
                     String msgBody = msg.getMessageBody();
-                    String json = Util.addMessageJson(Util.SMS_RECEIVED, Collections.singletonList(Contact.contactFrom(ctx, msgFrom)), msg.getTimestampMillis(), msgBody);
+                    String json = Util.addMessageJson(Util.SMS_RECEIVED, Collections.singletonList(msgFrom), msg.getTimestampMillis(), msgBody);
                     try {
                         Util.sendEvent(ctx, json, new Callback() {
                             @Override
-                            public void onFailure(Call call, IOException e) {
-
-                            }
+                            public void onFailure(Call call, IOException e) {}
 
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {

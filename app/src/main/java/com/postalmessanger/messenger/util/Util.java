@@ -16,6 +16,7 @@ import android.telephony.SmsManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.postalmessanger.messenger.OutgoingSmsHandler;
@@ -91,9 +92,8 @@ public class Util {
     public static void sendSMS(final Context ctx, Message msg, final Fn fn) {
         final String SENT = "SMS_SENT";
         SmsManager smsManager = SmsManager.getDefault();
-        final Contact recipients = msg.recipients.get(0);
-        final PhoneNumber phoneNumber = recipients.phoneNumbers.get(0);
-        final String message = msg.data;
+        final String number = msg.recipients.get(0);
+        final String text = msg.text;
         Intent sentIntent = new Intent(SENT);
         PendingIntent piSent = PendingIntent.getBroadcast(ctx, 0, sentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         BroadcastReceiver sentBroadcastReceiver = new BroadcastReceiver() {
@@ -115,7 +115,7 @@ public class Util {
             }
         };
         ctx.registerReceiver(sentBroadcastReceiver, new IntentFilter(SENT));
-        smsManager.sendTextMessage(phoneNumber.number, null, message, piSent, null);
+        smsManager.sendTextMessage(number, null, text, piSent, null);
     }
 
     public static void setupPusher(final Context ctx) {
@@ -159,14 +159,15 @@ public class Util {
             @Override
             public void onEvent(String channelName, String eventName, String data) {
                 final Event evt = Json.fromJson(data);
+                //{:dest phone, :type send-message, :socket_id 177848.2425395, :data {:type sent, :idx 1, :recipients [6505551212], :text i wont!}}
                 if (evt.dest.equals("phone")) {
                     switch (evt.type) {
                         case "send-message":
-                            Log.v("PostalMessenger", "Send " + evt.message);
+                            Log.v("PostalMessenger", "Send " + evt.data);
                             final int id = DbUtil.getNextSmsId(ctx);
                             // TODO: Not sure if marking message before it is sent is really going to fly
                             DbUtil.insertMessage(ctx, id);
-                            sendSMS(ctx, evt.message, new Fn() {
+                            sendSMS(ctx, evt.data, new Fn() {
                                 @Override
                                 public void onSuccess() {
                                     try {
@@ -341,38 +342,33 @@ public class Util {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(new Date(timestamp));
     }
 
-    public static JsonObject sendClientEvent() {
+    public static JsonObject sendClientEvent(String type, JsonElement data) {
         JsonObject json = new JsonObject();
         json.addProperty("dest", "client");
         json.addProperty("socket_id", socket_id);
+        json.addProperty("type", type);
+        json.add("data", data);
         return json;
     }
 
     public static String contactsJson(List<Contact> contacts) {
-        JsonObject json = sendClientEvent();
-        json.addProperty("type", "get-contacts");
-        json.add("contacts", new Gson().toJsonTree(contacts));
+        JsonObject json = sendClientEvent("get-contacts", new Gson().toJsonTree(contacts));
         return new Gson().toJson(json);
     }
 
     public static String messageSentJson(Event evt) {
-        JsonObject json = sendClientEvent();
-        json.addProperty("type", MESSAGE_SENT);
-        json.add("message", new Gson().toJsonTree(evt.message));
+        JsonObject json = sendClientEvent(MESSAGE_SENT, new Gson().toJsonTree(evt.data));
         return new Gson().toJson(json);
     }
 
-    public static String addMessageJson(String type, List<Contact> recipients, long timestamp, String data) {
+    public static String addMessageJson(String type, List<String> recipients, long timestamp, String text) {
         JsonObject msg = new JsonObject();
         msg.addProperty("type", type);
-        normalizeContacts(recipients);
-        msg.add("recipients", new Gson().toJsonTree(recipients));
+        msg.add("recipients", new Gson().toJsonTree(normalizePhoneNumbers(recipients)));
         msg.addProperty("timestamp", formatTimestamp(timestamp));
-        msg.addProperty("data", data);
+        msg.addProperty("text", text);
 
-        JsonObject json = sendClientEvent();
-        json.addProperty("type", ADD_MESSAGE);
-        json.add("message", msg);
+        JsonObject json = sendClientEvent(ADD_MESSAGE, msg);
         return new Gson().toJson(json);
     }
 
