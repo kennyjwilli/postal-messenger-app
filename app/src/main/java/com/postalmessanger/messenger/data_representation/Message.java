@@ -13,4 +13,18 @@ public class Message {
     public String timestamp;
     public String text;
     public int idx;
+
+    public Message(String type, List<String> recipients, String timestamp, String text, int idx) {
+        this.type = type;
+        this.recipients = recipients;
+        this.timestamp = timestamp;
+        this.text = text;
+        this.idx = idx;
+    }
+
+    public Message(String type, List<String> recipients, String timestamp, String text) {
+        this(type, recipients, timestamp, text, -1);
+    }
+
+    public Message() {}
 }
