@@ -43,6 +43,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +90,20 @@ public class Util {
         return sb.toString();
     }
 
+    public static Message getMessage(Context ctx, Uri uri) {
+        Cursor cur = ctx.getContentResolver().query(uri, null, null, null, null);
+        if (cur != null) {
+            if (cur.moveToFirst() && cur.getCount() > 0) {
+                String text = cur.getString(cur.getColumnIndex("body"));
+                String number = cur.getString(cur.getColumnIndex("address"));
+                long date = cur.getLong(cur.getColumnIndex("date"));
+                return new Message(null, Collections.singletonList(number), formatTimestamp(date), text);
+            }
+            cur.close();
+        }
+        return null;
+    }
+
     public static void sendSMS(final Context ctx, Message msg, final Fn fn) {
         final String SENT = "SMS_SENT";
         SmsManager smsManager = SmsManager.getDefault();
@@ -105,7 +120,7 @@ public class Util {
                     if (getResultCode() == Activity.RESULT_OK) {
                         String uri = (String) intent.getExtras().get("uri");
                         DbUtil.insertMessage(ctx, uri);
-                        fn.onSuccess();
+                        fn.onSuccess(uri);
                         Log.v("PostalMessenger", "sent message successfully");
                     } else {
                         fn.onError();
@@ -169,11 +184,16 @@ public class Util {
                             DbUtil.insertMessage(ctx, id);
                             sendSMS(ctx, evt.data, new Fn() {
                                 @Override
-                                public void onSuccess() {
-                                    try {
-                                        sendEvent(ctx, messageSentJson(evt));
-                                    } catch (JSONException | IOException e) {
-                                        e.printStackTrace();
+                                public void onSuccess(Object... args) {
+                                    String uri = (String) args[0];
+                                    Message msg = getMessage(ctx, Uri.parse(uri));
+                                    if (msg != null) {
+                                        msg.idx = evt.data.idx;
+                                        try {
+                                            sendEvent(ctx, messageSentJson(msg));
+                                        } catch (JSONException | IOException e) {
+                                            e.printStackTrace();
+                                        }
                                     }
                                 }
 
@@ -356,8 +376,8 @@ public class Util {
         return new Gson().toJson(json);
     }
 
-    public static String messageSentJson(Event evt) {
-        JsonObject json = sendClientEvent(MESSAGE_SENT, new Gson().toJsonTree(evt.data));
+    public static String messageSentJson(Message msg) {
+        JsonObject json = sendClientEvent(MESSAGE_SENT, new Gson().toJsonTree(msg));
         return new Gson().toJson(json);
     }
 
