@@ -248,7 +248,7 @@ public class Util {
     public static final String SMS_SENT = "sent";
 
     public static String normalizePhoneNumber(String number) {
-        return number.replaceAll("[^\\d]", "");
+        return number.replaceAll("[^0-9]", "");
     }
 
     public static List<String> normalizePhoneNumbers(List<String> recipients) {
@@ -257,6 +257,14 @@ public class Util {
             result.add(normalizePhoneNumber(s));
         }
         return result;
+    }
+
+    public static void normalizeContacts(List<Contact> contacts) {
+        for (Contact c : contacts) {
+            for (PhoneNumber num : c.phoneNumbers) {
+                num.number = normalizePhoneNumber(num.number);
+            }
+        }
     }
 
     public static String formatTimestamp(long timestamp) {
@@ -273,6 +281,7 @@ public class Util {
     }
 
     public static String contactsJson(List<Contact> contacts) {
+        normalizeContacts(contacts);
         JsonObject json = sendClientEvent("get-contacts", new Gson().toJsonTree(contacts));
         return new Gson().toJson(json);
     }
