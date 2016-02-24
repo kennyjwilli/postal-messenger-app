@@ -11,6 +11,7 @@ import com.postalmessanger.messenger.data_representation.Message;
 import com.postalmessanger.messenger.db.DbUtil;
 import com.postalmessanger.messenger.util.Fn;
 import com.postalmessanger.messenger.util.Http;
+import com.postalmessanger.messenger.util.SLAPI;
 import com.postalmessanger.messenger.util.Util;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.PrivateChannel;
@@ -56,8 +57,7 @@ public class Pusher {
         HttpAuthorizer authorizer = new HttpAuthorizer(Http.BASE_URL + "/api/pusher-auth");
         authorizer.setHeaders(Http.getAuthHeaders(ctx));
         PusherOptions options = new PusherOptions().setAuthorizer(authorizer);
-        //TODO: Get API_KEY from server
-        final com.pusher.client.Pusher pusher = new com.pusher.client.Pusher("d24a197fd369b0ed0b58", options);
+        final com.pusher.client.Pusher pusher = new com.pusher.client.Pusher(SLAPI.getSavedValue(ctx, SLAPI.API_KEY), options);
         //TODO: Pusher may lose connection. See link
         //also verify changing from lte to wifi wont drop connection
         //https://github.com/pusher/pusher-websocket-java/issues/34#issuecomment-160173016
@@ -79,8 +79,7 @@ public class Pusher {
             }
         }, ConnectionState.ALL);
 
-        //TODO: Get correct channel from sharedprefs
-        PrivateChannel channel = pusher.subscribePrivate("private-message-john@example.com");
+        PrivateChannel channel = pusher.subscribePrivate(SLAPI.getSavedValue(ctx, SLAPI.MESSAGE_CHANNEL));
         channel.bind("messages", new PrivateChannelEventListener() {
             @Override
             public void onAuthenticationFailure(String message, Exception e) {

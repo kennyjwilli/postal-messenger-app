@@ -13,6 +13,9 @@ import java.util.Map;
 public class SLAPI {
     public static final String settingsPrefName = "settings";
 
+    public static final String API_KEY = "api-key";
+    public static final String MESSAGE_CHANNEL = "message-channel";
+
     public static void saveValues(Context ctx, String loc, Map<String, String> kv) {
         SharedPreferences prefs = ctx.getSharedPreferences(loc, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
