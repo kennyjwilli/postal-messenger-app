@@ -20,20 +20,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.postalmessanger.messenger.OutgoingSmsHandler;
+import com.postalmessanger.messenger.Pusher;
 import com.postalmessanger.messenger.data_representation.Contact;
-import com.postalmessanger.messenger.data_representation.Event;
-import com.postalmessanger.messenger.data_representation.Json;
 import com.postalmessanger.messenger.data_representation.Message;
 import com.postalmessanger.messenger.data_representation.PhoneNumber;
 import com.postalmessanger.messenger.db.DbUtil;
-import com.pusher.client.Pusher;
-import com.pusher.client.PusherOptions;
-import com.pusher.client.channel.PrivateChannel;
-import com.pusher.client.channel.PrivateChannelEventListener;
-import com.pusher.client.connection.ConnectionEventListener;
-import com.pusher.client.connection.ConnectionState;
-import com.pusher.client.connection.ConnectionStateChange;
-import com.pusher.client.util.HttpAuthorizer;
 
 import org.json.JSONException;
 
@@ -55,7 +46,6 @@ import okhttp3.Callback;
  * Created by kenny on 1/31/16.
  */
 public class Util {
-    public static String socket_id;
     public static final Uri OUTGOING_SMS_URI = Uri.parse("content://sms");
 
     public static void registerOutgoingSmsListener(Context ctx) {
@@ -133,92 +123,6 @@ public class Util {
         };
         ctx.registerReceiver(sentBroadcastReceiver, new IntentFilter(SENT));
         smsManager.sendTextMessage(number, null, text, piSent, null);
-    }
-
-    public static void setupPusher(final Context ctx) {
-        HttpAuthorizer authorizer = new HttpAuthorizer(Http.BASE_URL + "/api/pusher-auth");
-        authorizer.setHeaders(Http.getAuthHeaders(ctx));
-        PusherOptions options = new PusherOptions().setAuthorizer(authorizer);
-        //TODO: Get API_KEY from server
-        final Pusher pusher = new Pusher("d24a197fd369b0ed0b58", options);
-        //TODO: Pusher may lose connection. See link
-        //also verify changing from lte to wifi wont drop connection
-        //https://github.com/pusher/pusher-websocket-java/issues/34#issuecomment-160173016
-        pusher.connect(new ConnectionEventListener() {
-            @Override
-            public void onConnectionStateChange(ConnectionStateChange change) {
-                Log.v("PostalMessenger", "State changed from " + change.getPreviousState() +
-                        " to " + change.getCurrentState());
-                if (change.getCurrentState().equals(ConnectionState.CONNECTED)) {
-                    socket_id = pusher.getConnection().getSocketId();
-                }
-            }
-
-            @Override
-            public void onError(String message, String code, Exception e) {
-                //TODO: Add pusher reconnect code
-                //https://github.com/pusher/pusher-websocket-java/issues/34#issuecomment-39449068
-                Log.e("PostalMessenger", "There was a problem connecting! " + message + " " + code);
-            }
-        }, ConnectionState.ALL);
-        PrivateChannel channel = pusher.subscribePrivate("private-message-john@example.com");
-        channel.bind("messages", new PrivateChannelEventListener() {
-            @Override
-            public void onAuthenticationFailure(String message, Exception e) {
-                Log.e("PostalMessenger", String.format("Authentication failure due to [%s], exception was [%s]", message, e));
-            }
-
-            @Override
-            public void onSubscriptionSucceeded(String s) {
-                Log.v("PostalMessenger", "Subscription succeeded");
-            }
-
-            @Override
-            public void onEvent(String channelName, String eventName, String data) {
-                final Event evt = Json.fromJson(data);
-                //{:dest phone, :type send-message, :socket_id 177848.2425395, :data {:type sent, :idx 1, :recipients [6505551212], :text i wont!}}
-                if (evt.dest.equals("phone")) {
-                    switch (evt.type) {
-                        case "send-message":
-                            Log.v("PostalMessenger", "Send " + evt.data);
-                            final int id = DbUtil.getNextSmsId(ctx);
-                            // TODO: Not sure if marking message before it is sent is really going to fly
-                            DbUtil.insertMessage(ctx, id);
-                            Log.v("PostalMessenger", "event idx " + evt.data.idx);
-                            sendSMS(ctx, evt.data, new Fn() {
-                                @Override
-                                public void onSuccess(Object... args) {
-                                    String uri = (String) args[0];
-                                    Message msg = getMessage(ctx, Uri.parse(uri));
-                                    if (msg != null) {
-                                        msg.idx = evt.data.idx;
-                                        try {
-                                            sendEvent(ctx, messageSentJson(msg));
-                                        } catch (JSONException | IOException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                }
-
-                                @Override
-                                public void onError() {
-                                    DbUtil.removeMessage(ctx, id);
-                                }
-                            });
-                            break;
-                        case "get-contacts":
-                            List<Contact> contacts = getContacts(ctx);
-                            String json = contactsJson(contacts);
-                            try {
-                                sendEvent(ctx, json);
-                            } catch (IOException | JSONException e) {
-                                e.printStackTrace();
-                            }
-                        default:
-                    }
-                }
-            }
-        });
     }
 
     public static String getPhoneNumberTypeString(int type) {
@@ -368,7 +272,7 @@ public class Util {
     public static JsonObject sendClientEvent(String type, JsonElement data) {
         JsonObject json = new JsonObject();
         json.addProperty("dest", "client");
-        json.addProperty("socket_id", socket_id);
+        json.addProperty("socket_id", Pusher.getInstance().getSocket_id());
         json.addProperty("type", type);
         json.add("data", data);
         return json;

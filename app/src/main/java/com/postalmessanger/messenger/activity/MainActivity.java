@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.postalmessanger.messenger.Pusher;
 import com.postalmessanger.messenger.R;
 import com.postalmessanger.messenger.db.DbUtil;
 import com.postalmessanger.messenger.util.SLAPI;
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Util.registerOutgoingSmsListener(getApplicationContext());
-                Util.setupPusher(getApplicationContext());
+                Pusher.init(getApplicationContext()).start();
                 Toast.makeText(getApplicationContext(), "Registered", Toast.LENGTH_SHORT).show();
             }
         });
