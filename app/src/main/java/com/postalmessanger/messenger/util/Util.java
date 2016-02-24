@@ -112,16 +112,17 @@ public class Util {
         Intent sentIntent = new Intent(SENT);
         PendingIntent piSent = PendingIntent.getBroadcast(ctx, 0, sentIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         BroadcastReceiver sentBroadcastReceiver = new BroadcastReceiver() {
+            boolean hasSent = false;
+
             @Override
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
-                Log.v("PostalMessenger", "action " + action);
                 if (action != null && action.equals(SENT)) {
-                    if (getResultCode() == Activity.RESULT_OK) {
+                    if (getResultCode() == Activity.RESULT_OK && !hasSent) {
                         String uri = (String) intent.getExtras().get("uri");
                         DbUtil.insertMessage(ctx, uri);
                         fn.onSuccess(uri);
-                        Log.v("PostalMessenger", "sent message successfully");
+                        hasSent = true;
                     } else {
                         fn.onError();
                         Log.v("PostalMessenger", "failed to send message");
@@ -182,6 +183,7 @@ public class Util {
                             final int id = DbUtil.getNextSmsId(ctx);
                             // TODO: Not sure if marking message before it is sent is really going to fly
                             DbUtil.insertMessage(ctx, id);
+                            Log.v("PostalMessenger", "event idx " + evt.data.idx);
                             sendSMS(ctx, evt.data, new Fn() {
                                 @Override
                                 public void onSuccess(Object... args) {
