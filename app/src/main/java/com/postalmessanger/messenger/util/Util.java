@@ -259,12 +259,6 @@ public class Util {
         return result;
     }
 
-    public static void normalizeContacts(List<Contact> contacts) {
-        for (Contact c : contacts) {
-            //c.phoneNumbers = normalizePhoneNumbers(c.phoneNumbers);
-        }
-    }
-
     public static String formatTimestamp(long timestamp) {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(new Date(timestamp));
     }
