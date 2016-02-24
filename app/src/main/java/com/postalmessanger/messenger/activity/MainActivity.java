@@ -1,12 +1,7 @@
 package com.postalmessanger.messenger.activity;
 
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.DatabaseUtils;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -14,7 +9,6 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.postalmessanger.messenger.R;
-import com.postalmessanger.messenger.data_representation.Contact;
 import com.postalmessanger.messenger.db.DbUtil;
 import com.postalmessanger.messenger.util.SLAPI;
 import com.postalmessanger.messenger.util.Util;

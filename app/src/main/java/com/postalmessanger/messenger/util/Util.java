@@ -92,16 +92,17 @@ public class Util {
 
     public static Message getMessage(Context ctx, Uri uri) {
         Cursor cur = ctx.getContentResolver().query(uri, null, null, null, null);
+        Message result = null;
         if (cur != null) {
             if (cur.moveToFirst() && cur.getCount() > 0) {
                 String text = cur.getString(cur.getColumnIndex("body"));
                 String number = cur.getString(cur.getColumnIndex("address"));
                 long date = cur.getLong(cur.getColumnIndex("date"));
-                return new Message(null, Collections.singletonList(number), formatTimestamp(date), text);
+                cur.close();
+                result = new Message(null, Collections.singletonList(number), formatTimestamp(date), text);
             }
-            cur.close();
         }
-        return null;
+        return result;
     }
 
     public static void sendSMS(final Context ctx, Message msg, final Fn fn) {

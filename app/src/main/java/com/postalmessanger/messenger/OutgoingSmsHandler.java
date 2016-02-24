@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.provider.ContactsContract;
 import android.util.Log;
 
-import com.postalmessanger.messenger.data_representation.Contact;
 import com.postalmessanger.messenger.db.DbUtil;
 import com.postalmessanger.messenger.util.Util;
 
@@ -48,7 +47,6 @@ public class OutgoingSmsHandler extends ContentObserver {
             int id = cur.getInt(cur.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID));
             long timestamp = cur.getLong(cur.getColumnIndex("date"));
             int type = cur.getInt(cur.getColumnIndex("type"));
-            Log.v("PostalMessenger", "change " + type);
 
             //TODO: Implement more types. See URL below
             //http://stackoverflow.com/questions/15352103/android-documentation-for-content-sms-type-values
