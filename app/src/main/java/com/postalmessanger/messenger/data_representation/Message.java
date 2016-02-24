@@ -1,6 +1,6 @@
 package com.postalmessanger.messenger.data_representation;
 
-import com.google.gson.JsonElement;
+import com.postalmessanger.messenger.util.Util;
 
 import java.util.List;
 
@@ -10,19 +10,21 @@ import java.util.List;
 public class Message {
     public String type;
     public List<String> recipients;
-    public String timestamp;
+    public long timestamp;
+    public String date;
     public String text;
     public int idx;
 
-    public Message(String type, List<String> recipients, String timestamp, String text, int idx) {
+    public Message(String type, List<String> recipients, long timestamp, String text, int idx) {
         this.type = type;
         this.recipients = recipients;
         this.timestamp = timestamp;
+        this.date = Util.formatTimestamp(timestamp);
         this.text = text;
         this.idx = idx;
     }
 
-    public Message(String type, List<String> recipients, String timestamp, String text) {
+    public Message(String type, List<String> recipients, long timestamp, String text) {
         this(type, recipients, timestamp, text, -1);
     }
 

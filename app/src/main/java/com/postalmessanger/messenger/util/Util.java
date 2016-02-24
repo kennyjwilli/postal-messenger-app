@@ -47,6 +47,8 @@ import okhttp3.Callback;
  */
 public class Util {
     public static final Uri OUTGOING_SMS_URI = Uri.parse("content://sms");
+    public static final int SMS_TYPE_SENT = 2;
+    public static final int SMS_TYPE_RECEIVED = 1;
 
     public static void registerOutgoingSmsListener(Context ctx) {
         ContentResolver resolver = ctx.getContentResolver();
@@ -87,9 +89,9 @@ public class Util {
             if (cur.moveToFirst() && cur.getCount() > 0) {
                 String text = cur.getString(cur.getColumnIndex("body"));
                 String number = cur.getString(cur.getColumnIndex("address"));
-                long date = cur.getLong(cur.getColumnIndex("date"));
+                long timestamp = cur.getLong(cur.getColumnIndex("date"));
                 cur.close();
-                result = new Message(null, Collections.singletonList(number), formatTimestamp(date), text);
+                result = new Message(null, Collections.singletonList(number), timestamp, text);
             }
         }
         return result;
@@ -295,7 +297,7 @@ public class Util {
         JsonObject msg = new JsonObject();
         msg.addProperty("type", type);
         msg.add("recipients", new Gson().toJsonTree(normalizePhoneNumbers(recipients)));
-        msg.addProperty("timestamp", formatTimestamp(timestamp));
+        msg.addProperty("date", formatTimestamp(timestamp));
         msg.addProperty("text", text);
 
         JsonObject json = sendClientEvent(ADD_MESSAGE, msg);
