@@ -1,10 +1,17 @@
 package com.postalmessanger.messenger;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
+import android.provider.Telephony;
+import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.postalmessanger.messenger.data_representation.Contact;
+import com.postalmessanger.messenger.data_representation.Conversation;
 import com.postalmessanger.messenger.data_representation.Event;
 import com.postalmessanger.messenger.data_representation.Json;
 import com.postalmessanger.messenger.data_representation.Message;
@@ -24,6 +31,7 @@ import com.pusher.client.util.HttpAuthorizer;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -103,6 +111,12 @@ public class Pusher {
                         case "get-contacts":
                             handleGetContacts();
                             break;
+                        case "get-conversations":
+                            handleGetConversations();
+                            break;
+                        case "get-conversation":
+                            handleGetConversation(evt);
+                            break;
                         default:
                     }
                 }
@@ -145,6 +159,40 @@ public class Pusher {
             Util.sendEvent(ctx, json);
         } catch (IOException | JSONException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void handleGetConversations() {
+        Uri uri = Uri.parse("content://mms-sms/conversations");
+        final String[] projection = new String[]{"thread_id", "date", "address", "body"};
+        Cursor cur = ctx.getContentResolver().query(uri, projection, null, null, "date DESC");
+        if (cur != null) {
+            List<Conversation> convs = new ArrayList<>();
+            while (cur.moveToNext()) {
+                String thread_id = cur.getString(cur.getColumnIndex("thread_id"));
+                long timestamp = cur.getLong(cur.getColumnIndex("date"));
+                String address = cur.getString(cur.getColumnIndex("address"));
+                String text = cur.getString(cur.getColumnIndex("body"));
+                if (address != null) {
+                    convs.add(new Conversation(thread_id, timestamp, Util.formatPhoneNumber(ctx, address), text));
+                }
+            }
+            cur.close();
+            JsonObject json = Util.sendClientEvent("get-conversations", new Gson().toJsonTree(convs));
+            try {
+                Util.sendEvent(ctx, new Gson().toJson(json));
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void handleGetConversation(Event evt) {
+        Uri uri = Uri.parse("content://sms");
+        final String[] projection = new String[]{};
+        Cursor cur = ctx.getContentResolver().query(uri, projection, null, null, null);
+        if (cur != null) {
+            cur.close();
         }
     }
 }
