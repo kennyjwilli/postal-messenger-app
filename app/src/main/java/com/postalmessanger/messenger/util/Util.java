@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
+import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.util.Log;
 
@@ -251,6 +252,17 @@ public class Util {
 
     public static String normalizePhoneNumber(String number) {
         return number.replaceAll("[^0-9]", "");
+    }
+
+    public static String formatPhoneNumber(Context ctx, String number) {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            TelephonyManager tm = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
+//            String countryCode = tm.getNetworkCountryIso();
+//            return PhoneNumberUtils.formatNumber(number, countryCode);
+//        } else {
+//            return PhoneNumberUtils.formatNumber(number);
+//        }
+        return PhoneNumberUtils.formatNumber(number);
     }
 
     public static List<String> normalizePhoneNumbers(List<String> recipients) {
