@@ -2,16 +2,13 @@ package com.postalmessanger.messenger;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
-import android.provider.Telephony;
-import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.postalmessanger.messenger.data_representation.Contact;
-import com.postalmessanger.messenger.data_representation.Conversation;
+import com.postalmessanger.messenger.data_representation.ConversationSnippet;
 import com.postalmessanger.messenger.data_representation.Event;
 import com.postalmessanger.messenger.data_representation.Json;
 import com.postalmessanger.messenger.data_representation.Message;
@@ -167,14 +164,14 @@ public class Pusher {
         final String[] projection = new String[]{"thread_id", "date", "address", "body"};
         Cursor cur = ctx.getContentResolver().query(uri, projection, null, null, "date DESC");
         if (cur != null) {
-            List<Conversation> convs = new ArrayList<>();
+            List<ConversationSnippet> convs = new ArrayList<>();
             while (cur.moveToNext()) {
                 String thread_id = cur.getString(cur.getColumnIndex("thread_id"));
                 long timestamp = cur.getLong(cur.getColumnIndex("date"));
                 String address = cur.getString(cur.getColumnIndex("address"));
                 String text = cur.getString(cur.getColumnIndex("body"));
                 if (address != null) {
-                    convs.add(new Conversation(thread_id, timestamp, Util.formatPhoneNumber(ctx, address), text));
+                    convs.add(new ConversationSnippet(thread_id, timestamp, Util.formatPhoneNumber(ctx, address), text));
                 }
             }
             cur.close();
