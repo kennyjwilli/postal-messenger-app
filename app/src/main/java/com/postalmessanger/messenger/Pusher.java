@@ -7,7 +7,9 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.postalmessanger.messenger.data_representation.Contact;
+import com.postalmessanger.messenger.data_representation.Conversation;
 import com.postalmessanger.messenger.data_representation.ConversationSnippet;
 import com.postalmessanger.messenger.data_representation.Event;
 import com.postalmessanger.messenger.data_representation.Json;
@@ -28,8 +30,16 @@ import com.pusher.client.util.HttpAuthorizer;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 /**
  * Created by kenny on 2/2/16.
@@ -99,10 +109,11 @@ public class Pusher {
             @Override
             public void onEvent(String channelName, String eventName, String data) {
                 Log.v("PostalMessenger", "RECEIVED " + data);
-                final Event evt = Json.fromJson(data);
-                if (evt.dest.equals("phone")) {
-                    switch (evt.type) {
+                final JsonObject jsonEvent = new JsonParser().parse(data).getAsJsonObject();
+                if (jsonEvent.get("dest").getAsString().equals("phone")) {
+                    switch (jsonEvent.get("type").getAsString()) {
                         case "send-message":
+                            final Event evt = new Gson().fromJson(jsonEvent, Event.class);
                             handleSendMessage(evt);
                             break;
                         case "get-contacts":
@@ -112,7 +123,7 @@ public class Pusher {
                             handleGetConversations();
                             break;
                         case "get-conversation":
-                            handleGetConversation(evt);
+                            handleGetConversation(jsonEvent);
                             break;
                         default:
                     }
@@ -184,12 +195,47 @@ public class Pusher {
         }
     }
 
-    private void handleGetConversation(Event evt) {
+    private void handleGetConversation(JsonObject evt) {
+        String thread_id = evt.get("data").getAsJsonObject().get("thread_id").getAsString();
         Uri uri = Uri.parse("content://sms");
-        final String[] projection = new String[]{};
-        Cursor cur = ctx.getContentResolver().query(uri, projection, null, null, null);
+        final String[] projection = new String[]{"type", "address", "date", "body"};
+        Cursor cur = ctx.getContentResolver().query(uri, projection, "thread_id=?", new String[]{thread_id}, "date ASC");
         if (cur != null) {
+            List<Message> messages = new ArrayList<>();
+            Set<String> recipients = new HashSet<>();
+            while (cur.moveToNext()) {
+                int type = cur.getInt(cur.getColumnIndex("type"));
+                String address = cur.getString(cur.getColumnIndex("address"));
+                long timestamp = cur.getLong(cur.getColumnIndex("date"));
+                String text = cur.getString(cur.getColumnIndex("body"));
+                messages.add(new Message(type, Collections.singletonList(address), timestamp, text));
+                recipients.add(Util.normalizePhoneNumber(address));
+            }
             cur.close();
+            Conversation conv = new Conversation(thread_id, new ArrayList<>(recipients), messages);
+            JsonObject json = Util.sendClientEvent("get-conversation", new Gson().toJsonTree(conv));
+            String s = new Gson().toJson(json);
+            try {
+                final byte[] utf8Bytes = s.getBytes("UTF-8");
+                System.out.println("LENGTH" + utf8Bytes.length);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            try {
+                Util.sendEvent(ctx, s, new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        System.out.println("pushed conv");
+                    }
+                });
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

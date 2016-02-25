@@ -48,8 +48,6 @@ import okhttp3.Callback;
  */
 public class Util {
     public static final Uri OUTGOING_SMS_URI = Uri.parse("content://sms");
-    public static final int SMS_TYPE_SENT = 2;
-    public static final int SMS_TYPE_RECEIVED = 1;
 
     public static void registerOutgoingSmsListener(Context ctx) {
         ContentResolver resolver = ctx.getContentResolver();
@@ -323,5 +321,13 @@ public class Util {
 
     public static void sendEvent(Context ctx, String json) throws IOException, JSONException {
         sendEvent(ctx, json, Http.emptyCallback());
+    }
+
+    public static void sendEvent(Context ctx, JsonElement json) throws IOException, JSONException {
+        sendEvent(ctx, new Gson().toJson(json));
+    }
+
+    public static void sendEvent(Context ctx, JsonElement json, Callback callback) throws IOException, JSONException {
+        sendEvent(ctx, new Gson().toJson(json), callback);
     }
 }
