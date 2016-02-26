@@ -8,11 +8,21 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.postalmessanger.messenger.Pusher;
 import com.postalmessanger.messenger.R;
-import com.postalmessanger.messenger.db.DbUtil;
+import com.postalmessanger.messenger.data_representation.Json;
+import com.postalmessanger.messenger.data_representation.Message;
+import com.postalmessanger.messenger.enums.EventType;
+import com.postalmessanger.messenger.enums.MessageType;
 import com.postalmessanger.messenger.util.SLAPI;
 import com.postalmessanger.messenger.util.Util;
+
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         printContactsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.v("PostalMessenger", Util.contactsJson(Util.getContacts(getApplicationContext())));
+                //Log.v("PostalMessenger", Util.contactsJson(Util.getContacts(getApplicationContext())));
             }
         });
 
@@ -53,12 +63,11 @@ public class MainActivity extends AppCompatActivity {
         testBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.v("PostalMessenger", "before" + String.valueOf(DbUtil.hasMessage(getApplicationContext(), "content://sms/323")));
-                DbUtil.insertMessage(getApplicationContext(), "content://sms/323");
-                Log.v("PostalMessenger", "after" + String.valueOf(DbUtil.hasMessage(getApplicationContext(), "content://sms/323")));
-                DbUtil.removeMessage(getApplicationContext(), 323);
-                Log.v("PostalMessenger", "after2" + String.valueOf(DbUtil.hasMessage(getApplicationContext(), "content://sms/323")));
-                Log.v("PostalMessenger", String.valueOf(DbUtil.getCurrentSmsId(getApplicationContext())));
+                try {
+                    Util.sendEvent(getApplicationContext(), EventType.MESSAGE_SENT, Json.toGson().toJsonTree(new Message("sent", Collections.singletonList("9252196640"), 1455874149684L, "the body")));
+                } catch (IOException | JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }

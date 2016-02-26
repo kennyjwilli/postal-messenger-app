@@ -15,6 +15,7 @@ import com.postalmessanger.messenger.data_representation.Event;
 import com.postalmessanger.messenger.data_representation.Json;
 import com.postalmessanger.messenger.data_representation.Message;
 import com.postalmessanger.messenger.db.DbUtil;
+import com.postalmessanger.messenger.enums.EventType;
 import com.postalmessanger.messenger.util.Fn;
 import com.postalmessanger.messenger.util.Http;
 import com.postalmessanger.messenger.util.SLAPI;
@@ -30,16 +31,11 @@ import com.pusher.client.util.HttpAuthorizer;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 /**
  * Created by kenny on 2/2/16.
@@ -146,7 +142,7 @@ public class Pusher {
                 if (msg != null) {
                     msg.idx = evt.data.idx;
                     try {
-                        Util.sendEvent(ctx, Util.messageSentJson(msg));
+                        Util.sendEvent(ctx, EventType.MESSAGE_SENT, Json.toGson().toJsonTree(msg));
                     } catch (JSONException | IOException e) {
                         e.printStackTrace();
                     }
@@ -162,9 +158,8 @@ public class Pusher {
 
     private void handleGetContacts() {
         List<Contact> contacts = Util.getContacts(ctx);
-        String json = Util.contactsJson(contacts);
         try {
-            Util.sendEvent(ctx, json);
+            Util.sendEvent(ctx, EventType.GET_CONTACTS, Json.toGson().toJsonTree(contacts));
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
@@ -186,9 +181,8 @@ public class Pusher {
                 }
             }
             cur.close();
-            JsonObject json = Util.sendClientEvent("get-conversations", new Gson().toJsonTree(convs));
             try {
-                Util.sendEvent(ctx, new Gson().toJson(json));
+                Util.sendEvent(ctx, EventType.GET_CONVERSATIONS, Json.toGson().toJsonTree(convs));
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }
@@ -213,26 +207,8 @@ public class Pusher {
             }
             cur.close();
             Conversation conv = new Conversation(thread_id, new ArrayList<>(recipients), messages);
-            JsonObject json = Util.sendClientEvent("get-conversation", new Gson().toJsonTree(conv));
-            String s = new Gson().toJson(json);
             try {
-                final byte[] utf8Bytes = s.getBytes("UTF-8");
-                System.out.println("LENGTH" + utf8Bytes.length);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            try {
-                Util.sendEvent(ctx, s, new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        System.out.println("pushed conv");
-                    }
-                });
+                Util.sendEvent(ctx, EventType.GET_CONVERSATION, Json.toJson(conv));
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }

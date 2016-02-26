@@ -1,13 +1,19 @@
 package com.postalmessanger.messenger.data_representation;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import com.postalmessanger.messenger.util.Util;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
  * Created by kenny on 2/18/16.
  */
-public class Message {
+public class Message implements JsonSerializer<Message> {
     public static final int SMS_TYPE_SENT = 2;
     public static final int SMS_TYPE_RECEIVED = 1;
 
@@ -46,5 +52,16 @@ public class Message {
             default:
                 return null;
         }
+    }
+
+    @Override
+    public JsonElement serialize(Message src, Type typeOfSrc, JsonSerializationContext context) {
+        JsonObject json = new JsonObject();
+        json.addProperty("t", src.type);
+        json.add("r", new Gson().toJsonTree(src.recipients));
+        json.addProperty("d", src.date);
+        json.addProperty("b", src.text);
+        if (idx >= 0) { json.addProperty("i", src.idx);}
+        return json;
     }
 }

@@ -6,19 +6,18 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.os.Handler;
 import android.provider.ContactsContract;
-import android.util.Log;
 
+import com.postalmessanger.messenger.data_representation.Json;
+import com.postalmessanger.messenger.data_representation.Message;
 import com.postalmessanger.messenger.db.DbUtil;
+import com.postalmessanger.messenger.enums.EventType;
+import com.postalmessanger.messenger.enums.MessageType;
 import com.postalmessanger.messenger.util.Util;
 
 import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.Collections;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 /**
  * Created by kenny on 2/1/16.
@@ -50,27 +49,11 @@ public class OutgoingSmsHandler extends ContentObserver {
 
             //TODO: Implement more types. See URL below
             //http://stackoverflow.com/questions/15352103/android-documentation-for-content-sms-type-values
-            Log.v("PostalMessenger", "might push");
             if (type == 2 && !DbUtil.hasMessage(ctx, id)) {
-                Log.v("PostalMessenger", "will push");
-                String json = Util.addMessageJson(Util.SMS_SENT, Collections.singletonList(msgFrom), timestamp, smsBody);
+                Message msg = new Message(MessageType.SMS_SENT, Collections.singletonList(msgFrom), timestamp, smsBody);
                 try {
-                    Util.sendEvent(ctx, json, new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-                        }
-
-                        @Override
-                        public void onResponse(Call call, Response response) throws IOException {
-                            if (response.isSuccessful()) {
-                                Log.v("PostalMessenger", "Added sent message successfully!");
-                            } else {
-                                Log.v("PostalMessenger", "Failed to add sent message");
-                            }
-                            response.body().close();
-                        }
-                    });
-                } catch (JSONException | IOException e) {
+                    Util.sendEvent(ctx, EventType.ADD_MESSAGE, Json.toJson(msg));
+                } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
             }

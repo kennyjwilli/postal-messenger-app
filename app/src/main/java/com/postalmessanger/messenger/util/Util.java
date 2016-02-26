@@ -17,6 +17,7 @@ import android.telephony.SmsManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -243,11 +244,6 @@ public class Util {
         return Integer.parseInt(split[split.length - 1]);
     }
 
-    public static final String ADD_MESSAGE = "add-message";
-    public static final String MESSAGE_SENT = "message-sent";
-    public static final String SMS_RECEIVED = "received";
-    public static final String SMS_SENT = "sent";
-
     public static String normalizePhoneNumber(String number) {
         return number.replaceAll("[^0-9]", "");
     }
@@ -271,63 +267,30 @@ public class Util {
         return result;
     }
 
-    public static void normalizeContacts(List<Contact> contacts) {
-        for (Contact c : contacts) {
-            for (PhoneNumber num : c.phoneNumbers) {
-                num.number = normalizePhoneNumber(num.number);
-            }
-        }
-    }
-
     public static String formatTimestamp(long timestamp) {
         return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(new Date(timestamp));
     }
 
-    public static JsonObject sendClientEvent(String type, JsonElement data) {
+    public static void sendEvent(Context ctx, String type, JsonElement data) throws IOException, JSONException {
         JsonObject json = new JsonObject();
-        json.addProperty("dest", "client");
+        json.addProperty("d", "client");
+        json.addProperty("t", type);
+        json.add("b", data);
+        push(ctx, json);
+    }
+
+    public static void push(Context ctx, JsonElement obj, Callback callback) throws JSONException, IOException {
+        JsonObject json = new JsonObject();
         json.addProperty("socket_id", Pusher.getInstance().getSocket_id());
-        json.addProperty("type", type);
-        json.add("data", data);
-        return json;
+        json.add("body", obj);
+        Gson gson = new GsonBuilder()
+                .create();
+        String send = gson.toJson(json);
+        Log.v("PostalMessenger", "Sent " + send);
+        Http.post(Http.BASE_URL + "/api/message", Http.getAuthHeaders(ctx.getApplicationContext()), send, callback);
     }
 
-    public static String contactsJson(List<Contact> contacts) {
-        normalizeContacts(contacts);
-        JsonObject json = sendClientEvent("get-contacts", new Gson().toJsonTree(contacts));
-        return new Gson().toJson(json);
-    }
-
-    public static String messageSentJson(Message msg) {
-        JsonObject json = sendClientEvent(MESSAGE_SENT, new Gson().toJsonTree(msg));
-        return new Gson().toJson(json);
-    }
-
-    public static String addMessageJson(String type, List<String> recipients, long timestamp, String text) {
-        JsonObject msg = new JsonObject();
-        msg.addProperty("type", type);
-        msg.add("recipients", new Gson().toJsonTree(normalizePhoneNumbers(recipients)));
-        msg.addProperty("date", formatTimestamp(timestamp));
-        msg.addProperty("text", text);
-
-        JsonObject json = sendClientEvent(ADD_MESSAGE, msg);
-        return new Gson().toJson(json);
-    }
-
-    public static void sendEvent(Context ctx, String json, Callback callback) throws JSONException, IOException {
-        Log.v("PostalMessenger", "Sent " + json);
-        Http.post(Http.BASE_URL + "/api/message", Http.getAuthHeaders(ctx.getApplicationContext()), json, callback);
-    }
-
-    public static void sendEvent(Context ctx, String json) throws IOException, JSONException {
-        sendEvent(ctx, json, Http.emptyCallback());
-    }
-
-    public static void sendEvent(Context ctx, JsonElement json) throws IOException, JSONException {
-        sendEvent(ctx, new Gson().toJson(json));
-    }
-
-    public static void sendEvent(Context ctx, JsonElement json, Callback callback) throws IOException, JSONException {
-        sendEvent(ctx, new Gson().toJson(json), callback);
+    public static void push(Context ctx, JsonElement json) throws IOException, JSONException {
+        push(ctx, json, Http.emptyCallback());
     }
 }
