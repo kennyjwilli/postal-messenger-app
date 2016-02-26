@@ -142,7 +142,7 @@ public class Pusher {
                 if (msg != null) {
                     msg.idx = evt.data.idx;
                     try {
-                        Util.sendEvent(ctx, EventType.MESSAGE_SENT, Json.toGson().toJsonTree(msg));
+                        Util.sendEvent(ctx, EventType.MESSAGE_SENT, Json.toJson(msg));
                     } catch (JSONException | IOException e) {
                         e.printStackTrace();
                     }
@@ -159,7 +159,7 @@ public class Pusher {
     private void handleGetContacts() {
         List<Contact> contacts = Util.getContacts(ctx);
         try {
-            Util.sendEvent(ctx, EventType.GET_CONTACTS, Json.toGson().toJsonTree(contacts));
+            Util.sendEvent(ctx, EventType.GET_CONTACTS, Json.toJson(contacts));
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
@@ -182,7 +182,7 @@ public class Pusher {
             }
             cur.close();
             try {
-                Util.sendEvent(ctx, EventType.GET_CONVERSATIONS, Json.toGson().toJsonTree(convs));
+                Util.sendEvent(ctx, EventType.GET_CONVERSATIONS, Json.toJson(convs));
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }

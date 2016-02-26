@@ -11,7 +11,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.postalmessanger.messenger.R;
 import com.postalmessanger.messenger.util.Http;
 import com.postalmessanger.messenger.util.SLAPI;

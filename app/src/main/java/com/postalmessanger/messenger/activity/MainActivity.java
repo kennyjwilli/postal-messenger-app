@@ -3,19 +3,15 @@ package com.postalmessanger.messenger.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.postalmessanger.messenger.Pusher;
 import com.postalmessanger.messenger.R;
 import com.postalmessanger.messenger.data_representation.Json;
 import com.postalmessanger.messenger.data_representation.Message;
 import com.postalmessanger.messenger.enums.EventType;
-import com.postalmessanger.messenger.enums.MessageType;
 import com.postalmessanger.messenger.util.SLAPI;
 import com.postalmessanger.messenger.util.Util;
 
@@ -64,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 try {
-                    Util.sendEvent(getApplicationContext(), EventType.MESSAGE_SENT, Json.toGson().toJsonTree(new Message("sent", Collections.singletonList("9252196640"), 1455874149684L, "the body")));
+                    Util.sendEvent(getApplicationContext(), EventType.MESSAGE_SENT, Json.toJson(new Message("sent", Collections.singletonList("9252196640"), 1455874149684L, "the body")));
                 } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }

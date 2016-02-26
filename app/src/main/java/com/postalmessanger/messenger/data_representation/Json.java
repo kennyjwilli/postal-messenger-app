@@ -8,6 +8,15 @@ import com.google.gson.JsonElement;
  * Created by kenny on 2/18/16.
  */
 public class Json {
+    private static final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(Contact.class, new Serialiser.ContactSerialiser())
+            .registerTypeAdapter(Conversation.class, new Serialiser.ConversationSerialiser())
+            .registerTypeAdapter(ConversationSnippet.class, new Serialiser.ConversationSnippetSerialiser())
+            .registerTypeAdapter(Event.class, new Serialiser.EventSerialiser())
+            .registerTypeAdapter(Message.class, new Serialiser.MessageSerialiser())
+            .registerTypeAdapter(PhoneNumber.class, new Serialiser.PhoneNumberSerialiser())
+            .create();
+
     public static Event fromJson(String json) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         //gsonBuilder.registerTypeAdapter(Message.class, new MessageInstanceCreator());
@@ -17,18 +26,7 @@ public class Json {
         return gson.fromJson(json, Event.class);
     }
 
-    public static Gson toGson() {
-        return new GsonBuilder()
-                .registerTypeAdapter(Contact.class, new Serialiser.ContactSerialiser())
-                .registerTypeAdapter(Conversation.class, new Serialiser.ConversationSerialiser())
-                .registerTypeAdapter(ConversationSnippet.class, new Serialiser.ConversationSnippetSerialiser())
-                .registerTypeAdapter(Event.class, new Serialiser.EventSerialiser())
-                .registerTypeAdapter(Message.class, new Serialiser.MessageSerialiser())
-                .registerTypeAdapter(PhoneNumber.class, new Serialiser.PhoneNumberSerialiser())
-                .create();
-    }
-
-    public static JsonElement toJson(Object src){
-        return toGson().toJsonTree(src);
+    public static JsonElement toJson(Object src) {
+        return gson.toJsonTree(src);
     }
 }
