@@ -9,12 +9,12 @@ import com.google.gson.JsonElement;
  */
 public class Json {
     private static final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(Contact.class, new Serialiser.ContactSerialiser())
-            .registerTypeAdapter(Conversation.class, new Serialiser.ConversationSerialiser())
-            .registerTypeAdapter(ConversationSnippet.class, new Serialiser.ConversationSnippetSerialiser())
-            .registerTypeAdapter(Event.class, new Serialiser.EventSerialiser())
-            .registerTypeAdapter(Message.class, new Serialiser.MessageSerialiser())
-            .registerTypeAdapter(PhoneNumber.class, new Serialiser.PhoneNumberSerialiser())
+            .registerTypeAdapter(Contact.class, new Serializer.ContactSerializer())
+            .registerTypeAdapter(Conversation.class, new Serializer.ConversationSerializer())
+            .registerTypeAdapter(ConversationSnippet.class, new Serializer.ConversationSnippetSerializer())
+            .registerTypeAdapter(Event.class, new Serializer.EventSerializer())
+            .registerTypeAdapter(Message.class, new Serializer.MessageSerializer())
+            .registerTypeAdapter(PhoneNumber.class, new Serializer.PhoneNumberSerializer())
             .create();
 
     public static Event fromJson(String json) {

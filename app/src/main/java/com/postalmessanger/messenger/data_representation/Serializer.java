@@ -12,26 +12,26 @@ import java.lang.reflect.Type;
 /**
  * Created by kenny on 2/25/16.
  */
-public class Serialiser {
+public class Serializer {
 
-    public static class ContactSerialiser implements JsonSerializer<Contact> {
+    public static class ContactSerializer implements JsonSerializer<Contact> {
         @Override
         public JsonElement serialize(Contact src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
             obj.addProperty("i", src.id);
             obj.addProperty("n", src.name);
-            Gson gson = new GsonBuilder().registerTypeAdapter(PhoneNumber.class, new PhoneNumberSerialiser()).create();
+            Gson gson = new GsonBuilder().registerTypeAdapter(PhoneNumber.class, new PhoneNumberSerializer()).create();
             obj.add("p", gson.toJsonTree(src.phoneNumbers));
             return obj;
         }
     }
 
-    public static class ConversationSerialiser implements JsonSerializer<Conversation> {
+    public static class ConversationSerializer implements JsonSerializer<Conversation> {
 
         @Override
         public JsonElement serialize(Conversation src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject json = new JsonObject();
-            Gson gson = new GsonBuilder().registerTypeAdapter(Message.class, new MessageSerialiser()).create();
+            Gson gson = new GsonBuilder().registerTypeAdapter(Message.class, new MessageSerializer()).create();
             json.addProperty("t", src.thread_id);
             json.add("r", new Gson().toJsonTree(src.recipients));
             json.add("m", gson.toJsonTree(src.messages));
@@ -39,7 +39,7 @@ public class Serialiser {
         }
     }
 
-    public static class ConversationSnippetSerialiser implements JsonSerializer<ConversationSnippet> {
+    public static class ConversationSnippetSerializer implements JsonSerializer<ConversationSnippet> {
 
         @Override
         public JsonElement serialize(ConversationSnippet src, Type typeOfSrc, JsonSerializationContext context) {
@@ -52,11 +52,11 @@ public class Serialiser {
         }
     }
 
-    public static class EventSerialiser implements JsonSerializer<Event> {
+    public static class EventSerializer implements JsonSerializer<Event> {
         @Override
         public JsonElement serialize(Event src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject json = new JsonObject();
-            Gson gson = new GsonBuilder().registerTypeAdapter(Message.class, new MessageSerialiser()).create();
+            Gson gson = new GsonBuilder().registerTypeAdapter(Message.class, new MessageSerializer()).create();
             json.addProperty("d", src.dest);
             json.addProperty("t", src.type);
             json.addProperty("s", src.socket_id);
@@ -65,7 +65,7 @@ public class Serialiser {
         }
     }
 
-    public static class MessageSerialiser implements JsonSerializer<Message> {
+    public static class MessageSerializer implements JsonSerializer<Message> {
         @Override
         public JsonElement serialize(Message src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject json = new JsonObject();
@@ -78,7 +78,7 @@ public class Serialiser {
         }
     }
 
-    public static class PhoneNumberSerialiser implements JsonSerializer<PhoneNumber> {
+    public static class PhoneNumberSerializer implements JsonSerializer<PhoneNumber> {
         @Override
         public JsonElement serialize(PhoneNumber src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
