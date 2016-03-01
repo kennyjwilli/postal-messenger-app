@@ -169,6 +169,30 @@ public class Util {
         return contacts;
     }
 
+
+    public static List<String> getRecipients(Context ctx, String recip_ids) {
+        String[] split = recip_ids.split(" ");
+        String where = "";
+        for (int i = 0; i < split.length; i++) {
+            where += "_id = " + split[i];
+            if (i != split.length - 1) {
+                where += " OR ";
+            }
+        }
+        Uri uri = Uri.parse("content://mms-sms/canonical-addresses");
+        String[] projection = new String[]{"address"};
+        Cursor cur = ctx.getContentResolver().query(uri, projection, where, null, null);
+        List<String> addresses = null;
+        if (cur != null && cur.getCount() > 0) {
+            addresses = new ArrayList<>();
+            while (cur.moveToNext()) {
+                addresses.add(normalizePhoneNumber(cur.getString(cur.getColumnIndex("address"))));
+            }
+            cur.close();
+        }
+        return addresses;
+    }
+
     public static int getMessageNumber(String uri) {
         String[] split = uri.split("/");
         return Integer.parseInt(split[split.length - 1]);
