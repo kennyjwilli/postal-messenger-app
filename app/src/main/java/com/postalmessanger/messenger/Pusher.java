@@ -2,7 +2,6 @@ package com.postalmessanger.messenger;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.util.Log;
 
@@ -34,14 +33,13 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by kenny on 2/2/16.
  */
 public class Pusher {
+    public static final int SIZE_LIMIT = 10000;
     private static Pusher pusher;
     private Context ctx;
     private String socket_id;
@@ -190,14 +188,20 @@ public class Pusher {
         }
     }
 
-    private void getRecipientIds(Context ctx, String thread_id) {
-        Uri uri = Uri.parse("content://mms-sms/threads");
-        String[] prj = new String[]{"_id", "recipient_ids"};
-        Cursor cur = ctx.getContentResolver().query(uri, prj, "thread_id=?", new String[]{thread_id}, null);
+    private List<String> getRecipientIds(String thread_id) {
+        List<String> out = null;
+        Uri uri = Uri.parse("content://mms-sms/conversations?simple=true");
+        final String[] prj = new String[]{"_id", "recipient_ids"};
+        Cursor cur = ctx.getContentResolver().query(uri, prj, "_id=?", new String[]{thread_id}, null);
         if (cur != null) {
-            System.out.println(DatabaseUtils.dumpCursorToString(cur));
+            out = new ArrayList<>();
+            if (cur.moveToFirst()) {
+                String[] split = cur.getString(cur.getColumnIndex("recipient_ids")).split(" ");
+                Collections.addAll(out, split);
+            }
             cur.close();
         }
+        return out;
     }
 
     private void handleGetConversation(JsonObject evt) {
@@ -207,14 +211,25 @@ public class Pusher {
         Cursor cur = ctx.getContentResolver().query(uri, projection, "thread_id=?", new String[]{thread_id}, "date ASC");
         if (cur != null) {
             List<Message> messages = new ArrayList<>();
-            Conversation conv = new Conversation(thread_id, null, null);
-            int preJsonLength = Json.toJson(conv).getAsString().length();
+            Conversation conv = new Conversation(thread_id, Util.getRecipients(ctx, getRecipientIds(thread_id)), null);
+
+            final String j = new Gson().toJson(Json.toJson(conv));
+            int jsonLength = j.length();
+            final String messageFrame = "{\"t\":\"\",\"d\":\"\",\"b\":\"\"},";
+            final int msgFrameLength = messageFrame.length();
+
             while (cur.moveToNext()) {
                 int type = cur.getInt(cur.getColumnIndex("type"));
-                String address = cur.getString(cur.getColumnIndex("address"));
                 long timestamp = cur.getLong(cur.getColumnIndex("date"));
                 String text = cur.getString(cur.getColumnIndex("body"));
-                messages.add(new Message(type, timestamp, text));
+                Message newMessage = new Message(type, timestamp, text);
+                int newLength = newMessage.getLength();
+                if (jsonLength + msgFrameLength + newLength < SIZE_LIMIT) {
+                    messages.add(newMessage);
+                    jsonLength += msgFrameLength + newLength;
+                } else {
+                    break;
+                }
             }
             cur.close();
             conv.messages = messages;

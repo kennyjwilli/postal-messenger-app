@@ -169,13 +169,11 @@ public class Util {
         return contacts;
     }
 
-
-    public static List<String> getRecipients(Context ctx, String recip_ids) {
-        String[] split = recip_ids.split(" ");
+    public static List<String> getRecipients(Context ctx, List<String> recip_ids) {
         String where = "";
-        for (int i = 0; i < split.length; i++) {
-            where += "_id = " + split[i];
-            if (i != split.length - 1) {
+        for (int i = 0; i < recip_ids.size(); i++) {
+            where += "_id = " + recip_ids.get(i);
+            if (i != recip_ids.size() - 1) {
                 where += " OR ";
             }
         }
