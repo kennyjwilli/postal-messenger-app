@@ -70,7 +70,9 @@ public class Serializer {
         public JsonElement serialize(Message src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject json = new JsonObject();
             json.addProperty("t", src.type);
-            json.add("r", new Gson().toJsonTree(src.recipients));
+            if (src.recipients != null) {
+                json.add("r", new Gson().toJsonTree(src.recipients));
+            }
             json.addProperty("d", src.date);
             json.addProperty("b", src.text);
             if (src.idx >= 0) { json.addProperty("i", src.idx);}

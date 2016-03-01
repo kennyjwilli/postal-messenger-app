@@ -202,7 +202,7 @@ public class Pusher {
                 String address = cur.getString(cur.getColumnIndex("address"));
                 long timestamp = cur.getLong(cur.getColumnIndex("date"));
                 String text = cur.getString(cur.getColumnIndex("body"));
-                messages.add(new Message(type, Collections.singletonList(address), timestamp, text));
+                messages.add(new Message(type, timestamp, text));
                 recipients.add(Util.normalizePhoneNumber(address));
             }
             cur.close();

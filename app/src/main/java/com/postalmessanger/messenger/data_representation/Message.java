@@ -41,6 +41,10 @@ public class Message implements JsonSerializer<Message> {
         this(messageTypeString(type), recipients, timestamp, text, -1);
     }
 
+    public Message(int type, long timestamp, String text) {
+        this(type, null, timestamp, text);
+    }
+
     public Message() {}
 
     public static String messageTypeString(int type) {
