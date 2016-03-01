@@ -18,7 +18,6 @@ public class Serializer {
         @Override
         public JsonElement serialize(Contact src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
-            obj.addProperty("i", src.id);
             obj.addProperty("n", src.name);
             Gson gson = new GsonBuilder().registerTypeAdapter(PhoneNumber.class, new PhoneNumberSerializer()).create();
             obj.add("p", gson.toJsonTree(src.phoneNumbers));
