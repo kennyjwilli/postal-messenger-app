@@ -26,7 +26,9 @@ public class Message implements JsonSerializer<Message> {
 
     public Message(String type, List<String> recipients, long timestamp, String text, int idx) {
         this.type = type;
-        this.recipients = Util.normalizePhoneNumbers(recipients);
+        if (recipients != null) {
+            this.recipients = Util.normalizePhoneNumbers(recipients);
+        }
         this.timestamp = timestamp;
         this.date = Util.formatTimestamp(timestamp);
         this.text = text;
@@ -56,6 +58,9 @@ public class Message implements JsonSerializer<Message> {
             default:
                 return null;
         }
+    }
+    public int getLength(){
+        return type.length() + date.length() + text.length();
     }
 
     @Override
