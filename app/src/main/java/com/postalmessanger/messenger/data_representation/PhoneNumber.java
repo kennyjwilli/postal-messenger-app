@@ -2,6 +2,8 @@ package com.postalmessanger.messenger.data_representation;
 
 import android.provider.ContactsContract;
 
+import com.postalmessanger.messenger.util.Util;
+
 /**
  * Created by kenny on 2/19/16.
  */
@@ -11,7 +13,7 @@ public class PhoneNumber {
 
     public PhoneNumber(String type, String phoneNumber) {
         this.type = type;
-        this.number = phoneNumber;
+        this.number = Util.normalizePhoneNumber(phoneNumber);
     }
 
     public PhoneNumber(int type, String phoneNumber) {
