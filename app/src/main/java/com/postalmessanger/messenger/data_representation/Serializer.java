@@ -33,8 +33,12 @@ public class Serializer {
             JsonObject json = new JsonObject();
             Gson gson = new GsonBuilder().registerTypeAdapter(Message.class, new MessageSerializer()).create();
             json.addProperty("t", src.thread_id);
-            json.add("r", new Gson().toJsonTree(src.recipients));
-            json.add("m", gson.toJsonTree(src.messages));
+            if (src.recipients != null) {
+                json.add("r", new Gson().toJsonTree(src.recipients));
+            }
+            if (src.messages != null) {
+                json.add("m", gson.toJsonTree(src.messages));
+            }
             return json;
         }
     }
