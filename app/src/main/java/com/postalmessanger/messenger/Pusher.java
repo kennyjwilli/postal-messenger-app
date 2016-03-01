@@ -2,6 +2,7 @@ package com.postalmessanger.messenger;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.util.Log;
 
@@ -189,6 +190,16 @@ public class Pusher {
         }
     }
 
+    private void getRecipientIds(Context ctx, String thread_id) {
+        Uri uri = Uri.parse("content://mms-sms/threads");
+        String[] prj = new String[]{"_id", "recipient_ids"};
+        Cursor cur = ctx.getContentResolver().query(uri, prj, "thread_id=?", new String[]{thread_id}, null);
+        if (cur != null) {
+            System.out.println(DatabaseUtils.dumpCursorToString(cur));
+            cur.close();
+        }
+    }
+
     private void handleGetConversation(JsonObject evt) {
         String thread_id = evt.get("data").getAsJsonObject().get("thread_id").getAsString();
         Uri uri = Uri.parse("content://sms");
@@ -196,17 +207,17 @@ public class Pusher {
         Cursor cur = ctx.getContentResolver().query(uri, projection, "thread_id=?", new String[]{thread_id}, "date ASC");
         if (cur != null) {
             List<Message> messages = new ArrayList<>();
-            Set<String> recipients = new HashSet<>();
+            Conversation conv = new Conversation(thread_id, null, null);
+            int preJsonLength = Json.toJson(conv).getAsString().length();
             while (cur.moveToNext()) {
                 int type = cur.getInt(cur.getColumnIndex("type"));
                 String address = cur.getString(cur.getColumnIndex("address"));
                 long timestamp = cur.getLong(cur.getColumnIndex("date"));
                 String text = cur.getString(cur.getColumnIndex("body"));
                 messages.add(new Message(type, timestamp, text));
-                recipients.add(Util.normalizePhoneNumber(address));
             }
             cur.close();
-            Conversation conv = new Conversation(thread_id, new ArrayList<>(recipients), messages);
+            conv.messages = messages;
             try {
                 Util.sendEvent(ctx, EventType.GET_CONVERSATION, Json.toJson(conv));
             } catch (IOException | JSONException e) {
