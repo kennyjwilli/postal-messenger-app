@@ -40,6 +40,7 @@ import java.util.List;
  */
 public class Pusher {
     public static final int SIZE_LIMIT = 10000;
+    public static final int CONVERSATION_MSG_LOAD_LIMIT = 40;
     private static Pusher pusher;
     private Context ctx;
     private String socket_id;
@@ -208,7 +209,7 @@ public class Pusher {
         String thread_id = evt.get("data").getAsJsonObject().get("thread_id").getAsString();
         Uri uri = Uri.parse("content://sms");
         final String[] projection = new String[]{"type", "address", "date", "body"};
-        Cursor cur = ctx.getContentResolver().query(uri, projection, "thread_id=?", new String[]{thread_id}, "date ASC");
+        Cursor cur = ctx.getContentResolver().query(uri, projection, "thread_id=?", new String[]{thread_id}, "date DESC");
         if (cur != null) {
             List<Message> messages = new ArrayList<>();
             Conversation conv = new Conversation(thread_id, Util.getRecipients(ctx, getRecipientIds(thread_id)), null);
@@ -218,7 +219,9 @@ public class Pusher {
             final String messageFrame = "{\"t\":\"\",\"d\":\"\",\"b\":\"\"},";
             final int msgFrameLength = messageFrame.length();
 
-            while (cur.moveToNext()) {
+            int i = 0;
+
+            while (cur.moveToNext() && i < CONVERSATION_MSG_LOAD_LIMIT) {
                 int type = cur.getInt(cur.getColumnIndex("type"));
                 long timestamp = cur.getLong(cur.getColumnIndex("date"));
                 String text = cur.getString(cur.getColumnIndex("body"));
@@ -230,8 +233,10 @@ public class Pusher {
                 } else {
                     break;
                 }
+                i++;
             }
             cur.close();
+            Collections.reverse(messages);
             conv.messages = messages;
             try {
                 Util.sendEvent(ctx, EventType.GET_CONVERSATION, Json.toJson(conv));
