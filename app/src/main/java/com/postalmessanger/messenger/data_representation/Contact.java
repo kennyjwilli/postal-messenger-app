@@ -20,15 +20,15 @@ public class Contact {
 
     public String id;
     public String name;
-    public List<PhoneNumber> phoneNumbers;
+    public List<PNumber> phoneNumbers;
 
-    public Contact(String id, String name, List<PhoneNumber> phoneNumbers) {
+    public Contact(String id, String name, List<PNumber> phoneNumbers) {
         this.id = id;
         this.name = name;
         this.phoneNumbers = phoneNumbers;
     }
 
-    public Contact(List<PhoneNumber> phoneNumbers) {
+    public Contact(List<PNumber> phoneNumbers) {
         this.phoneNumbers = phoneNumbers;
     }
 
@@ -46,11 +46,11 @@ public class Contact {
             if (cur.moveToFirst()) {
                 String id = cur.getString(cur.getColumnIndex(ContactsContract.PhoneLookup._ID));
                 String name = cur.getString(cur.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
-                List<PhoneNumber> phoneNumbers = Util.phoneNumbersFor(ctx, id);
+                List<PNumber> phoneNumbers = Util.phoneNumbersFor(ctx, id);
                 return new Contact(id, name, phoneNumbers);
             }
             cur.close();
         }
-        return new Contact(Collections.singletonList(new PhoneNumber(phoneNumber)));
+        return new Contact(Collections.singletonList(new PNumber(phoneNumber)));
     }
 }

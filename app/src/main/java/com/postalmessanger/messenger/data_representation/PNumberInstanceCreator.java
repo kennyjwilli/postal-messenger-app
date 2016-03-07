@@ -7,8 +7,8 @@ import java.lang.reflect.Type;
 /**
  * Created by kenny on 2/19/16.
  */
-public class PhoneNumberInstanceCreator implements InstanceCreator<PhoneNumber> {
-    public PhoneNumber createInstance(Type type) {
-        return new PhoneNumber();
+public class PNumberInstanceCreator implements InstanceCreator<PNumber> {
+    public PNumber createInstance(Type type) {
+        return new PNumber();
     }
 }

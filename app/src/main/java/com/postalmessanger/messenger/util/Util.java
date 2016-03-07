@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
-import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -22,11 +21,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.google.i18n.phonenumbers.Phonenumber;
 import com.postalmessanger.messenger.OutgoingSmsHandler;
 import com.postalmessanger.messenger.Pusher;
 import com.postalmessanger.messenger.data_representation.Contact;
 import com.postalmessanger.messenger.data_representation.Message;
-import com.postalmessanger.messenger.data_representation.PhoneNumber;
+import com.postalmessanger.messenger.data_representation.PNumber;
 import com.postalmessanger.messenger.db.DbUtil;
 
 import org.json.JSONException;
@@ -134,8 +134,8 @@ public class Util {
         smsManager.sendTextMessage(number, null, text, piSent, null);
     }
 
-    public static List<PhoneNumber> phoneNumbersFor(Context ctx, String id) {
-        List<PhoneNumber> phoneNumbers = new ArrayList<>();
+    public static List<PNumber> phoneNumbersFor(Context ctx, String id) {
+        List<PNumber> phoneNumbers = new ArrayList<>();
         ContentResolver cr = ctx.getContentResolver();
         Cursor pCur = cr.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
@@ -146,7 +146,7 @@ public class Util {
             while (pCur.moveToNext()) {
                 int type = pCur.getInt(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
                 String phoneNumber = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                phoneNumbers.add(new PhoneNumber(type, phoneNumber));
+                phoneNumbers.add(new PNumber(type, phoneNumber));
             }
             pCur.close();
         }
@@ -165,7 +165,7 @@ public class Util {
             while (cur.moveToNext()) {
                 String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
                 String name = cur.getString(cur.getColumnIndex(Contact.CONTACT_NAME));
-                List<PhoneNumber> phoneNumbers = new ArrayList<>();
+                List<PNumber> phoneNumbers = new ArrayList<>();
                 if (hasPhoneNumber(cur)) {
                     phoneNumbers = phoneNumbersFor(ctx, id);
                 }

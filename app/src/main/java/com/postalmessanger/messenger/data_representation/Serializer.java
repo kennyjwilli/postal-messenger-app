@@ -19,7 +19,7 @@ public class Serializer {
         public JsonElement serialize(Contact src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
             obj.addProperty("n", src.name);
-            Gson gson = new GsonBuilder().registerTypeAdapter(PhoneNumber.class, new PhoneNumberSerializer()).create();
+            Gson gson = new GsonBuilder().registerTypeAdapter(PNumber.class, new PhoneNumberSerializer()).create();
             obj.add("p", gson.toJsonTree(src.phoneNumbers));
             return obj;
         }
@@ -83,9 +83,9 @@ public class Serializer {
         }
     }
 
-    public static class PhoneNumberSerializer implements JsonSerializer<PhoneNumber> {
+    public static class PhoneNumberSerializer implements JsonSerializer<PNumber> {
         @Override
-        public JsonElement serialize(PhoneNumber src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(PNumber src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject obj = new JsonObject();
             obj.addProperty("t", src.type);
             obj.addProperty("n", src.number);

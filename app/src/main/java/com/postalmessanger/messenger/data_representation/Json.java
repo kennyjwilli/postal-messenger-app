@@ -14,14 +14,14 @@ public class Json {
             .registerTypeAdapter(ConversationSnippet.class, new Serializer.ConversationSnippetSerializer())
             .registerTypeAdapter(Event.class, new Serializer.EventSerializer())
             .registerTypeAdapter(Message.class, new Serializer.MessageSerializer())
-            .registerTypeAdapter(PhoneNumber.class, new Serializer.PhoneNumberSerializer())
+            .registerTypeAdapter(PNumber.class, new Serializer.PhoneNumberSerializer())
             .create();
 
     public static Event fromJson(String json) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         //gsonBuilder.registerTypeAdapter(Message.class, new MessageInstanceCreator());
         gsonBuilder.registerTypeAdapter(Contact.class, new ContactInstanceCreator());
-        gsonBuilder.registerTypeAdapter(PhoneNumber.class, new PhoneNumberInstanceCreator());
+        gsonBuilder.registerTypeAdapter(PNumber.class, new PNumberInstanceCreator());
         Gson gson = gsonBuilder.create();
         return gson.fromJson(json, Event.class);
     }

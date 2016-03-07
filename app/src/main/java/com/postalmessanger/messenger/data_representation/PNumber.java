@@ -7,24 +7,24 @@ import com.postalmessanger.messenger.util.Util;
 /**
  * Created by kenny on 2/19/16.
  */
-public class PhoneNumber {
+public class PNumber {
     public String type;
     public String number;
 
-    public PhoneNumber(String type, String phoneNumber) {
+    public PNumber(String type, String phoneNumber) {
         this.type = type;
         this.number = Util.normalizePhoneNumber(phoneNumber);
     }
 
-    public PhoneNumber(int type, String phoneNumber) {
+    public PNumber(int type, String phoneNumber) {
         this(getType(type), phoneNumber);
     }
 
-    public PhoneNumber(String phoneNumber) {
+    public PNumber(String phoneNumber) {
         this(null, phoneNumber);
     }
 
-    public PhoneNumber() {
+    public PNumber() {
     }
 
     public static String getType(int type) {
