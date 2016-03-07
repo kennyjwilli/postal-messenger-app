@@ -21,6 +21,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.postalmessanger.messenger.OutgoingSmsHandler;
 import com.postalmessanger.messenger.Pusher;
@@ -40,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import okhttp3.Callback;
@@ -206,8 +209,14 @@ public class Util {
     }
 
     public static String normalizePhoneNumber(String number) {
+        PhoneNumberUtil putil = PhoneNumberUtil.getInstance();
+        try {
+            Phonenumber.PhoneNumber proto = putil.parse(number, Locale.getDefault().getCountry());
+            return putil.format(proto, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
+        } catch (NumberParseException e) {
+            e.printStackTrace();
+        }
         return number.replaceAll("[^0-9]", "");
-        //return PhoneNumberUtils.formatNumber(number);
     }
 
     public static List<String> normalizePhoneNumbers(List<String> recipients) {
