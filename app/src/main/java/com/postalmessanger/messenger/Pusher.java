@@ -181,7 +181,7 @@ public class Pusher {
                 String address = cur.getString(cur.getColumnIndex("address"));
                 String text = cur.getString(cur.getColumnIndex("body"));
                 if (address != null) {
-                    convs.add(new ConversationSnippet(thread_id, timestamp, Util.formatPhoneNumber(ctx, address), text));
+                    convs.add(new ConversationSnippet(thread_id, timestamp, Util.normalizePhoneNumber(address), text));
                 }
             }
             cur.close();

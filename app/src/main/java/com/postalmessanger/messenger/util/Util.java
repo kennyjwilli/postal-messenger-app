@@ -51,7 +51,7 @@ import okhttp3.Callback;
 public class Util {
     public static final Uri OUTGOING_SMS_URI = Uri.parse("content://sms");
 
-    public static void initService(Context ctx){
+    public static void initService(Context ctx) {
         registerOutgoingSmsListener(ctx);
         Pusher.init(ctx).start();
         Toast.makeText(ctx, "Registered", Toast.LENGTH_SHORT).show();
@@ -169,7 +169,9 @@ public class Util {
                 if (hasPhoneNumber(cur)) {
                     phoneNumbers = phoneNumbersFor(ctx, id);
                 }
-                contacts.add(new Contact(id, name, phoneNumbers));
+                if (!phoneNumbers.isEmpty()) {
+                    contacts.add(new Contact(id, name, phoneNumbers));
+                }
             }
             cur.close();
         }
@@ -205,17 +207,7 @@ public class Util {
 
     public static String normalizePhoneNumber(String number) {
         return number.replaceAll("[^0-9]", "");
-    }
-
-    public static String formatPhoneNumber(Context ctx, String number) {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            TelephonyManager tm = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
-//            String countryCode = tm.getNetworkCountryIso();
-//            return PhoneNumberUtils.formatNumber(number, countryCode);
-//        } else {
-//            return PhoneNumberUtils.formatNumber(number);
-//        }
-        return PhoneNumberUtils.formatNumber(number);
+        //return PhoneNumberUtils.formatNumber(number);
     }
 
     public static List<String> normalizePhoneNumbers(List<String> recipients) {
