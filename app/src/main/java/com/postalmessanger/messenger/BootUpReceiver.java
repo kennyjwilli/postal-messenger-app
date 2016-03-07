@@ -12,6 +12,6 @@ import com.postalmessanger.messenger.util.Util;
 public class BootUpReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Util.registerOutgoingSmsListener(context);
+        Util.initService(context);
     }
 }

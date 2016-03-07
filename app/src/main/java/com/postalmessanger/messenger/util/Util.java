@@ -15,6 +15,7 @@ import android.provider.ContactsContract;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -49,6 +50,12 @@ import okhttp3.Callback;
  */
 public class Util {
     public static final Uri OUTGOING_SMS_URI = Uri.parse("content://sms");
+
+    public static void initService(Context ctx){
+        registerOutgoingSmsListener(ctx);
+        Pusher.init(ctx).start();
+        Toast.makeText(ctx, "Registered", Toast.LENGTH_SHORT).show();
+    }
 
     public static void registerOutgoingSmsListener(Context ctx) {
         ContentResolver resolver = ctx.getContentResolver();

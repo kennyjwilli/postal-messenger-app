@@ -7,18 +7,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.postalmessanger.messenger.Pusher;
 import com.postalmessanger.messenger.R;
-import com.postalmessanger.messenger.data_representation.Json;
-import com.postalmessanger.messenger.data_representation.Message;
-import com.postalmessanger.messenger.enums.EventType;
 import com.postalmessanger.messenger.util.SLAPI;
 import com.postalmessanger.messenger.util.Util;
-
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,9 +32,7 @@ public class MainActivity extends AppCompatActivity {
         startServiceBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Util.registerOutgoingSmsListener(getApplicationContext());
-                Pusher.init(getApplicationContext()).start();
-                Toast.makeText(getApplicationContext(), "Registered", Toast.LENGTH_SHORT).show();
+                Util.initService(getApplicationContext());
             }
         });
 
@@ -59,11 +48,7 @@ public class MainActivity extends AppCompatActivity {
         testBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    Util.sendEvent(getApplicationContext(), EventType.MESSAGE_SENT, Json.toJson(new Message("sent", Collections.singletonList("9252196640"), 1455874149684L, "the body")));
-                } catch (IOException | JSONException e) {
-                    e.printStackTrace();
-                }
+                //System.out.println(Util.getRecipients(getApplicationContext(), getRecipientIds("12")));
             }
         });
     }
