@@ -80,6 +80,10 @@ public class Pusher {
                 if (change.getCurrentState().equals(ConnectionState.CONNECTED)) {
                     socket_id = pusher.getConnection().getSocketId();
                 }
+                if (change.getCurrentState().equals(ConnectionState.DISCONNECTED)) {
+                    Log.v("PostalMessenger", "Pusher disconnected! Trying to reconnect...");
+                    pusher.connect();
+                }
             }
 
             @Override
